@@ -1,4 +1,4 @@
-package com.hxht.mobile.committe
+package com.hxht.mobile.committee
 
 import android.support.test.InstrumentationRegistry
 import android.support.test.runner.AndroidJUnit4

@@ -1,4 +1,4 @@
-package com.hxht.mobile.committe
+package com.hxht.mobile.committee
 
 import org.junit.Test
 

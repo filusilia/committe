@@ -1,0 +1,42 @@
+<resources>
+
+    <!-- Declare custom theme attributes that allow changing which styles are
+         used for button bars depending on the API level.
+         ?android:attr/buttonBarStyle is new as of API 11 so this is
+         necessary to support previous API levels. -->
+    <declare-styleable name="ButtonBarContainerTheme">
+        <attr name="metaButtonBarStyle" format="reference" />
+        <attr name="metaButtonBarButtonStyle" format="reference" />
+    </declare-styleable>
+
+    <!--水波纹进度条-->
+    <declare-styleable name="WaveProgressView">
+        <attr name="wave_color" format="color" />
+        <attr name="second_wave_color" format="color" />
+        <attr name="wave_bg_color" format="color" />
+
+        <attr name="wave_width" format="dimension" />
+        <attr name="wave_height" format="dimension" />
+    </declare-styleable>
+
+    <!--<declare-styleable name="MyEditText">-->
+        <!--&lt;!&ndash;功能的类型&ndash;&gt;-->
+        <!--<attr name="funcType">-->
+            <!--<enum name="normal" value="1"/>-->
+            <!--<enum name="canClear" value="1"/>-->
+            <!--<enum name="canWatchPwd" value="1" />-->
+        <!--</attr>-->
+        <!--&lt;!&ndash;关闭查看密码的图标&ndash;&gt;-->
+        <!--<attr name="eyeClose" format="reference"/>-->
+        <!--&lt;!&ndash;开启查看密码的图标&ndash;&gt;-->
+        <!--<attr name="eyeOpen" format="reference"/>-->
+        <!--&lt;!&ndash;左侧Drawable的宽度&ndash;&gt;-->
+        <!--<attr name="leftDrawableWidth" format="dimension"/>-->
+        <!--&lt;!&ndash;左侧Drawable的高度&ndash;&gt;-->
+        <!--<attr name="leftDrawableHeight" format="dimension"/>-->
+        <!--&lt;!&ndash;右侧Drawable的宽度&ndash;&gt;-->
+        <!--<attr name="rightDrawableWidth" format="dimension"/>-->
+        <!--&lt;!&ndash;右侧Drawable的高度&ndash;&gt;-->
+        <!--<attr name="rightDrawableHeight" format="dimension"/>-->
+    <!--</declare-styleable>-->
+</resources>

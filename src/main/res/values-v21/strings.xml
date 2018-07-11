@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btn_message">send</string>
+    <string name="btn_login">login</string>
+    <string name="meet_list_title">meet list</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="createVoteDialogHint">voteDialogHint</string>
+</resources>
