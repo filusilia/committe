@@ -10,14 +10,12 @@ import android.text.TextUtils
 import android.util.Log
 import android.view.View
 import android.widget.LinearLayout
-import android.widget.ScrollView
 import android.widget.Toast
 import com.chaychan.viewlib.PowerfulEditText
 import com.hxht.mobile.committee.dialog.NormalDialog
 import com.hxht.mobile.committee.entity.Meet
 import kotlinx.android.synthetic.main.activity_vote.*
 import org.jetbrains.anko.forEachChild
-import org.jetbrains.anko.forEachChildWithIndex
 
 
 class VoteActivity : AppCompatActivity() {
