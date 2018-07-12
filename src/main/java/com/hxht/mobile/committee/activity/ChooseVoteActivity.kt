@@ -1,4 +1,4 @@
-package com.hxht.mobile.committee
+package com.hxht.mobile.committee.activity
 
 import android.app.AlertDialog
 import android.content.DialogInterface
@@ -11,6 +11,7 @@ import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import com.chad.library.adapter.base.BaseQuickAdapter
+import com.hxht.mobile.committee.R
 import com.hxht.mobile.committee.adapter.ChooseVoteAdapter
 import com.hxht.mobile.committee.dialog.NormalDialog
 import com.hxht.mobile.committee.entity.Meet

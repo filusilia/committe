@@ -1,8 +1,7 @@
-package com.hxht.mobile.committee
+package com.hxht.mobile.committee.activity
 
 import android.content.Intent
 import android.os.Bundle
-import android.provider.SyncStateContract
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
@@ -12,6 +11,7 @@ import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import com.chad.library.adapter.base.BaseQuickAdapter
+import com.hxht.mobile.committee.R
 import com.hxht.mobile.committee.adapter.MeetListAdapter
 import com.hxht.mobile.committee.common.Constants
 import com.hxht.mobile.committee.dialog.NormalDialog

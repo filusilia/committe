@@ -1,4 +1,4 @@
-package com.hxht.mobile.committee
+package com.hxht.mobile.committee.activity
 
 import android.content.Intent
 import android.os.Bundle
@@ -12,6 +12,7 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.Toast
 import com.chaychan.viewlib.PowerfulEditText
+import com.hxht.mobile.committee.R
 import com.hxht.mobile.committee.dialog.NormalDialog
 import com.hxht.mobile.committee.entity.Meet
 import kotlinx.android.synthetic.main.activity_vote.*

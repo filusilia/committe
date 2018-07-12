@@ -31,7 +31,7 @@
         </provider>
 
         <activity
-            android:name=".LoginActivity"
+            android:name=".activity.LoginActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -40,12 +40,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".NowMeetingActivity"
+            android:name=".activity.NowMeetingActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".MeetListActivity"
+            android:name=".activity.MeetListActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -61,11 +61,11 @@
             android:screenOrientation="landscape"
             android:theme="@style/FullscreenTheme" />
         <activity
-            android:name=".VoteActivity"
+            android:name=".activity.VoteActivity"
             android:label="@string/title_activity_vote"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".ChooseVoteActivity"
+            android:name=".activity.ChooseVoteActivity"
             android:label="@string/title_activity_choose_vote"
             android:theme="@style/AppTheme.NoActionBar"/>
     </application>

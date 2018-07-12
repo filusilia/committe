@@ -1,4 +1,4 @@
-package com.hxht.mobile.committee
+package com.hxht.mobile.committee.activity
 
 import android.Manifest.permission.READ_CONTACTS
 import android.animation.Animator
@@ -24,6 +24,7 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import android.widget.Toast
+import com.hxht.mobile.committee.R
 import com.hxht.mobile.committee.dialog.NormalDialog
 import com.hxht.mobile.committee.entity.Meet
 import kotlinx.android.synthetic.main.activity_login.*

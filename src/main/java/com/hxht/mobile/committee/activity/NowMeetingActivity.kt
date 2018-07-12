@@ -1,4 +1,4 @@
-package com.hxht.mobile.committee
+package com.hxht.mobile.committee.activity
 
 import android.Manifest
 import android.app.AlertDialog
@@ -21,8 +21,8 @@ import android.widget.TextView
 import android.widget.Toast
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.daimajia.numberprogressbar.NumberProgressBar
+import com.hxht.mobile.committee.R
 import com.hxht.mobile.committee.R.id.number_progress_bar
-import com.hxht.mobile.committee.activity.ExpPlayerActivity
 import com.hxht.mobile.committee.adapter.NowMeetingStuffAdapter
 import com.hxht.mobile.committee.common.Constants
 import com.hxht.mobile.committee.dialog.MyImageDialog
@@ -39,7 +39,6 @@ import com.yanzhenjie.kalle.download.Download
 import kotlinx.android.synthetic.main.now_meeting.*
 import kotlinx.android.synthetic.main.now_meeting_app_bar.*
 import kotlinx.android.synthetic.main.now_meeting_content.*
-import java.io.Serializable
 import java.util.*
 
 
