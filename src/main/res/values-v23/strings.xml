@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="loginHint">Login</string>
+    <string name="user_info">个人信息</string>
+    <string name="change_meet">change meet</string>
 </resources>

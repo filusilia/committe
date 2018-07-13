@@ -32,4 +32,6 @@
     <string name="title_activity_vote">VoteActivity</string>
     <string name="title_activity_choose_vote">ChooseVoteActivity</string>
     <string name="loginHint">Login</string>
+    <string name="user_info">个人信息</string>
+    <string name="change_meet">change meet</string>
 </resources>

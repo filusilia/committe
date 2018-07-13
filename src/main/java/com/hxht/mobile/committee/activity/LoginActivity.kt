@@ -124,7 +124,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
      */
     private fun loginStart(username: String, psd: String) {
 
-        val tipDialog = QMUITipDialog.Builder(this)
+        var tipDialog = QMUITipDialog.Builder(this)
                 .setIconType(QMUITipDialog.Builder.ICON_TYPE_LOADING)
                 .setTipWord("正在登录")
                 .create()
@@ -142,10 +142,22 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                 .perform(object : SimpleCallback<String>() {
                     override fun onResponse(response: SimpleResponse<String, String>?) {
                         tipDialog.dismiss()
+                        val admin = "姜老板"
+                        tipDialog = QMUITipDialog.Builder(this@LoginActivity)
+                                .setIconType(QMUITipDialog.Builder.ICON_TYPE_SUCCESS)
+                                .setTipWord("欢迎您，$admin")
+                                .create()
+                        tipDialog.show()
                         LogUtils.i(response)
                         val intent = Intent(this@LoginActivity, NowMeetingActivity::class.java)
                         intent.putExtra("meet", Meet("王老汉碰瓷案", Date()))
                         startActivityForResult(intent, 0)
+
+                        Timer().schedule(object : TimerTask() {
+                            override fun run() {
+                                tipDialog.dismiss()
+                            }
+                        }, 2000)
                     }
 
                     override fun onException(e: Exception?) {

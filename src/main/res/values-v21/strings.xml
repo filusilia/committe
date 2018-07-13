@@ -7,4 +7,6 @@
     <string name="no">No</string>
     <string name="createVoteDialogHint">voteDialogHint</string>
     <string name="loginHint">Login</string>
+    <string name="user_info">个人信息</string>
+    <string name="change_meet">change meet</string>
 </resources>

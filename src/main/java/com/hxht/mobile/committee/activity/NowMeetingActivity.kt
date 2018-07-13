@@ -1,6 +1,7 @@
 package com.hxht.mobile.committee.activity
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
@@ -16,10 +17,10 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import com.blankj.utilcode.util.BarUtils
+import com.blankj.utilcode.util.LogUtils
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.daimajia.numberprogressbar.NumberProgressBar
 import com.hxht.mobile.committee.R
@@ -52,6 +53,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
     private val REQUEST_EXTERNAL_STORAGE = 1
     private var rxPermissions: RxPermissions? = null
 
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_now_meeting)
@@ -67,26 +69,22 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
 
         meet = intent.getSerializableExtra("meet") as Meet
         if (null != meet) {
-            nowTitle.text = meet?.meetName
+            nowTitle.text = "当前会议： ${meet?.meetName}"
         }
         initDemoFile()
         initDemoVote()
-        val btn = findViewById<Button>(R.id.nowMeetingBtn)
-        btn.setOnClickListener {
-            Log.i("info", "cancel btn")
-            Kalle.Download.cancel(cancelTag)
-        }
-        val createVoteBtn = findViewById<Button>(R.id.createVote)
-        createVoteBtn.setOnClickListener {
-            Log.i("info", "createVoteBtn btn")
-//            val createVoteDialog = VoteDialog(this, "王老五越狱案")
-//            createVoteDialog.setMessage("王老五越狱案")
-//            createVoteDialog.show()
-            val intent = Intent(this@NowMeetingActivity, VoteActivity::class.java)
-            intent.putExtra("id", "336699999x")
-            intent.putExtra("meet", meet)
-            startActivityForResult(intent, 0)
-        }
+//        val btn = findViewById<Button>(R.id.nowMeetingBtn)
+//        btn.setOnClickListener {
+//            Log.i("info", "cancel btn")
+//            Kalle.Download.cancel(cancelTag)
+//        }
+//        val createVoteBtn = findViewById<Button>(R.id.createVote)
+//        createVoteBtn.setOnClickListener {
+//            val intent = Intent(this@NowMeetingActivity, VoteActivity::class.java)
+//            intent.putExtra("id", "336699999x")
+//            intent.putExtra("meet", meet)
+//            startActivityForResult(intent, 0)
+//        }
         // 获取RecyclerView对象
         recyclerView = findViewById<View>(R.id.meetStuffRecycler) as RecyclerView
 
@@ -173,12 +171,22 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         Kalle.Download.cancel(cancelTag)
     }
 
+    private var firstTime = 0L
     override fun onBackPressed() {
         if (drawer_layout.isDrawerOpen(GravityCompat.START)) {
             drawer_layout.closeDrawer(GravityCompat.START)
         } else {
-            super.onBackPressed()
+            val secondTime = System.currentTimeMillis()
+            LogUtils.i(secondTime)
+            if (secondTime - firstTime > 2000) {
+                Toast.makeText(this@NowMeetingActivity, "再按一次退出程序", Toast.LENGTH_SHORT).show()
+                firstTime = secondTime
+            } else {
+                System.exit(0)
+            }
+//            super.onBackPressed()
         }
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -200,13 +208,10 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Handle navigation view item clicks here.
         when (item.itemId) {
-            R.id.nav_camera -> {
+            R.id.nav_user_info -> {
                 // Handle the camera action
             }
-            R.id.nav_manage -> {
-
-            }
-            R.id.nav_send -> {
+            R.id.nav_change_meet -> {
 
             }
         }

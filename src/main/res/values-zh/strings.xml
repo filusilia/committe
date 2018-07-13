@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">审委会系统</string>
     <string name="nav_header_title">张三</string>
-    <string name="action_settings">设置</string>
+    <string name="action_settings">创建投票</string>
     <string name="nav_header_subtitle">123@hxht.com</string>
     <string name="btn_message">发送信息</string>
     <string name="btn_login">登录</string>
@@ -22,4 +22,6 @@
     <string name="createVoteDialogHint">点击‘+’添加投票项 点击‘x’删除投票项</string>
     <string name="cancel">取消</string>
     <string name="loginHint">欢迎使用审委会系统</string>
+    <string name="user_info">个人信息</string>
+    <string name="change_meet">切换会议</string>
 </resources>

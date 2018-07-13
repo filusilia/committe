@@ -11,38 +11,38 @@
     <android.support.constraint.ConstraintLayout
         android:id="@+id/nowMeeting"
         android:layout_width="match_parent"
-        android:layout_height="150dp">
+        android:layout_height="wrap_content">
 
         <TextView
             android:id="@+id/nowTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="@color/qmui_s_switch_text_color"
             android:gravity="center"
-            android:text="TextView"
+            android:text=""
             android:textSize="24sp" />
 
-        <Button
-            android:id="@+id/nowMeetingBtn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:text="开始了"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/nowTitle" />
-
-        <Button
-            android:id="@+id/createVote"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:text="点我创建投票！点啊！"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/nowMeetingBtn" />
+        <!--<Button-->
+            <!--android:id="@+id/nowMeetingBtn"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginEnd="8dp"-->
+            <!--android:layout_marginStart="8dp"-->
+            <!--android:text="开始了"-->
+            <!--app:layout_constraintEnd_toEndOf="parent"-->
+            <!--app:layout_constraintStart_toStartOf="parent"-->
+            <!--app:layout_constraintTop_toBottomOf="@+id/nowTitle" />-->
+        <!--<Button-->
+            <!--android:id="@+id/createVote"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginEnd="8dp"-->
+            <!--android:layout_marginStart="8dp"-->
+            <!--android:layout_marginTop="8dp"-->
+            <!--android:text="点我创建投票！点啊！"-->
+            <!--app:layout_constraintEnd_toEndOf="parent"-->
+            <!--app:layout_constraintStart_toStartOf="parent"-->
+            <!--app:layout_constraintTop_toBottomOf="@+id/nowMeetingBtn" />-->
     </android.support.constraint.ConstraintLayout>
 
     <android.support.v7.widget.RecyclerView
