@@ -36,9 +36,9 @@ import com.yanzhenjie.kalle.Headers
 import com.yanzhenjie.kalle.Kalle
 import com.yanzhenjie.kalle.download.Callback
 import com.yanzhenjie.kalle.download.Download
-import kotlinx.android.synthetic.main.now_meeting.*
+import kotlinx.android.synthetic.main.activity_now_meeting.*
 import kotlinx.android.synthetic.main.now_meeting_app_bar.*
-import kotlinx.android.synthetic.main.now_meeting_content.*
+import kotlinx.android.synthetic.main.content_now_meeting.*
 import java.util.*
 
 
@@ -53,7 +53,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.now_meeting)
+        setContentView(R.layout.activity_now_meeting)
         setSupportActionBar(nowMeetingToolbar)
 
         val toggle = ActionBarDrawerToggle(
@@ -160,7 +160,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
 //        sampleRecyclerAdapter.openLoadMore(PAGE_SIZE, true);
         sampleRecyclerAdapter.openLoadAnimation()
         // 没有数据的时候默认显示该布局
-        val view = this.layoutInflater.inflate(R.layout.empty_view, null)
+        val view = this.layoutInflater.inflate(R.layout.activity_empty, null)
         view.findViewById<TextView>(R.id.emptyTextHint).text = "没有找到案件相关资料"
         sampleRecyclerAdapter.emptyView = view
         recyclerView.adapter = sampleRecyclerAdapter

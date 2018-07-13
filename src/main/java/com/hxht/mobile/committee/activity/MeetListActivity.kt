@@ -85,7 +85,7 @@ class MeetListActivity : AppCompatActivity() {
 //        // 当列表滑动到倒数第N个Item的时候(默认是1)回调onLoadMoreRequested方法
 //        sampleRecyclerAdapter.setPreLoadNumber(int);
         // 没有数据的时候默认显示该布局
-        val view = this.layoutInflater.inflate(R.layout.empty_view,null)
+        val view = this.layoutInflater.inflate(R.layout.activity_empty,null)
         view.findViewById<TextView>(R.id.emptyTextHint).text = "没有找到案件"
         sampleRecyclerAdapter.emptyView = view
         recyclerView.adapter = sampleRecyclerAdapter

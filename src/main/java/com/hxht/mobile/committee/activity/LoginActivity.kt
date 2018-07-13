@@ -21,13 +21,17 @@ import android.support.v7.app.AppCompatActivity
 import android.text.TextUtils
 import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import android.widget.Toast
 import com.hxht.mobile.committee.R
 import com.hxht.mobile.committee.dialog.NormalDialog
 import com.hxht.mobile.committee.entity.Meet
+import com.qmuiteam.qmui.util.QMUIStatusBarHelper
+import com.qmuiteam.qmui.widget.dialog.QMUITipDialog
 import kotlinx.android.synthetic.main.activity_login.*
+import kotlinx.android.synthetic.main.content_login.*
 import org.json.JSONObject
 import java.util.*
 
@@ -44,6 +48,8 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
+        setSupportActionBar(loginToolbar)
+        QMUIStatusBarHelper.translucent(this)
         val sharedPreferences = getSharedPreferences(LOGIN_TOKEN, 0)
         // Simulate network access.
         // token verify before network
@@ -69,6 +75,10 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         })
 
         sign_in_button.setOnClickListener { attemptLogin() }
+
+        tipDialog = QMUITipDialog.Builder(this).setIconType(QMUITipDialog.Builder.ICON_TYPE_LOADING)
+                .setTipWord("正在加载")
+                .create()
     }
 
     private fun populateAutoComplete() {
@@ -80,9 +90,6 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
     }
 
     private fun mayRequestContacts(): Boolean {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            return true
-        }
         if (checkSelfPermission(READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
             return true
         }
@@ -112,35 +119,30 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
      * 登录验证通过方法
      */
     private fun loginStart(username: String, psd: String) {
-//        Thread.sleep(2000)
+        Thread.sleep(2000)
         if (username == "username" && psd == "password") {
-
+            tipDialog?.dismiss()
             val sharedPreferences = getSharedPreferences(LOGIN_TOKEN, 0)
             val editor = sharedPreferences.edit()
             editor.putString("username", username)
             editor.putString("password", psd)
             editor.apply()
 
-            val random = Random()
-//            showProgress(false)
-            Log.v("TAG", random.nextInt().toString())
-
             val selfDialog = NormalDialog(this)
-
             selfDialog.setTitle("找到会议啦")
             selfDialog.setMessage("你现在是不是想要参加会议：王老汉碰瓷案?")
-            selfDialog.setYesClickListener(null, object : NormalDialog.YesClickListener {
+            selfDialog.setYesClickListener("是的", object : NormalDialog.YesClickListener {
                 override fun onYesClick() {
                     Toast.makeText(this@LoginActivity, "点击了--确定--按钮", Toast.LENGTH_LONG).show()
                     selfDialog.dismiss()
                     val intent = Intent(this@LoginActivity, NowMeetingActivity::class.java)
-                    intent.putExtra("meet", Meet("王老汉碰瓷案",Date()))
+                    intent.putExtra("meet", Meet("王老汉碰瓷案", Date()))
                     startActivityForResult(intent, 0)
                 }
             })
-            selfDialog.setNoClickListener(null, object : NormalDialog.NoClickListener {
+            selfDialog.setNoClickListener("不是此会议", object : NormalDialog.NoClickListener {
                 override fun onNoClick() {
-                    Toast.makeText(this@LoginActivity, "点击了--取消--按钮", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this@LoginActivity, "点击了--取消--按钮", Toast.LENGTH_LONG).show()
                     selfDialog.dismiss()
                     val intent = Intent(this@LoginActivity, MeetListActivity::class.java)
                     startActivity(intent)
@@ -148,19 +150,14 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             })
             selfDialog.show()
 
-//            if (true) {
-//                val intent = Intent(this, MeetListActivity::class.java)
-//                startActivity(intent)
-//            } else {
-//                val intent = Intent(this, NowMeetingActivity::class.java)
-//                startActivity(intent)
-//            }
         } else {
             showProgress(false)
             password.error = getString(R.string.error_incorrect_password)
             password.requestFocus()
         }
     }
+
+    private var tipDialog: QMUITipDialog? = null
 
     /**
      * 登录验证
@@ -184,19 +181,22 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         var cancel = false
         var focusView: View? = null
 
-        // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(passwordStr) && !isPasswordValid(passwordStr)) {
-            password.error = getString(R.string.error_invalid_password)
-            focusView = password
-            cancel = true
-        }
-
-        // Check for a valid email address.
         if (TextUtils.isEmpty(usernameStr)) {
             username.error = getString(R.string.error_field_required)
             focusView = username
             cancel = true
-        } else if (!isUsernameValid(usernameStr)) {
+        }
+        // Check for a valid password, if the user entered one.
+        if (TextUtils.isEmpty(passwordStr)) {
+            password.error = getString(R.string.error_field_required)
+            focusView = password
+            cancel = true
+        } else if (!isPasswordValid(passwordStr)) {
+
+        }
+
+        // Check for a valid email address.
+        else if (!isUsernameValid(usernameStr)) {
             username.error = getString(R.string.error_invalid_username)
             focusView = username
             cancel = true
@@ -209,7 +209,8 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
-            showProgress(true)
+//            showProgress(true)
+            tipDialog?.show()
             /**
              * 验证通过开始登录任务
              * UserLoginTask
@@ -221,13 +222,12 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
     }
 
     private fun isUsernameValid(username: String): Boolean {
-        //TODO: Replace this with your own logic
 //        return username.contains("")
         return true
     }
 
     private fun isPasswordValid(password: String): Boolean {
-        //TODO: Replace this with your own logic
+        //网络验证用户名密码
         return password.length > 4
     }
 

@@ -72,7 +72,7 @@ class ChooseVoteActivity : AppCompatActivity() {
         }
         sampleRecyclerAdapter.openLoadAnimation()
         // 没有数据的时候默认显示该布局
-        val view = this.layoutInflater.inflate(R.layout.empty_view, null)
+        val view = this.layoutInflater.inflate(R.layout.activity_empty, null)
         view.findViewById<TextView>(R.id.emptyTextHint).text = "投票项！"
         sampleRecyclerAdapter.emptyView = view
         chooseVoteChild.adapter = sampleRecyclerAdapter

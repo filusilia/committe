@@ -9,7 +9,7 @@ class EmptyActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.empty_view)
+        setContentView(R.layout.activity_empty)
         window.statusBarColor = ContextCompat.getColor(this, R.color.colorPrimaryDark)
 
     }

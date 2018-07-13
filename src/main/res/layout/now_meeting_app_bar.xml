@@ -21,6 +21,6 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/now_meeting_content" />
+    <include layout="@layout/content_now_meeting" />
 
 </android.support.design.widget.CoordinatorLayout>

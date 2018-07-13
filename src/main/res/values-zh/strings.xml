@@ -14,12 +14,12 @@
     <string name="prompt_password">密码</string>
     <string name="error_invalid_password">密码过短了!</string>
     <string name="error_field_required">该字段不能为空!</string>
-    <string name="error_invalid_email">邮箱地址错误!</string>
     <string name="error_incorrect_password">密码错误!</string>
     <string name="error_invalid_username">用户名不存在!</string>
     <string name="meet_list_title">会议列表</string>
     <string name="yes">确定</string>
-    <string name="no">选择其他会议</string>
+    <string name="no">取消</string>
     <string name="createVoteDialogHint">点击‘+’添加投票项 点击‘x’删除投票项</string>
     <string name="cancel">取消</string>
+    <string name="loginHint">欢迎使用审委会系统</string>
 </resources>

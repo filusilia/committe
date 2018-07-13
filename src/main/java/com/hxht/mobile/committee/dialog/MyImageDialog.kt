@@ -12,7 +12,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.github.chrisbanes.photoview.PhotoView
 import com.hxht.mobile.committee.R
-import kotlinx.android.synthetic.main.image_dialog.*
+import kotlinx.android.synthetic.main.dialog_image.*
 
 
 /**
@@ -23,7 +23,7 @@ class MyImageDialog (context: Context, private val url: String) : AlertDialog(co
     private var photoView: PhotoView? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.image_dialog)
+        setContentView(R.layout.dialog_image)
         photoView = findViewById<View>(R.id.photo_view) as PhotoView
 //        photoView.width
         //按空白处不能取消动画

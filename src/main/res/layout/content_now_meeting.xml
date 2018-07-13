@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".activity.NowMeetingActivity"
-    tools:showIn="@layout/now_meeting">
+    tools:showIn="@layout/activity_now_meeting">
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/nowMeeting"

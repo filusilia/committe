@@ -5,7 +5,6 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.TextView
 import com.hxht.mobile.committee.R
 
@@ -17,7 +16,7 @@ open class NormalDialog(context: Context?) : Dialog(context) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login_dialog)
+        setContentView(R.layout.dialog_normal)
         //按空白处不能取消动画
         setCanceledOnTouchOutside(false)
         //初始化界面控件
