@@ -19,6 +19,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import com.blankj.utilcode.util.BarUtils
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.daimajia.numberprogressbar.NumberProgressBar
 import com.hxht.mobile.committee.R
@@ -37,8 +38,8 @@ import com.yanzhenjie.kalle.Kalle
 import com.yanzhenjie.kalle.download.Callback
 import com.yanzhenjie.kalle.download.Download
 import kotlinx.android.synthetic.main.activity_now_meeting.*
-import kotlinx.android.synthetic.main.now_meeting_app_bar.*
 import kotlinx.android.synthetic.main.content_now_meeting.*
+import kotlinx.android.synthetic.main.now_meeting_app_bar.*
 import java.util.*
 
 
@@ -55,7 +56,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_now_meeting)
         setSupportActionBar(nowMeetingToolbar)
-
+        BarUtils.setStatusBarColor(this, resources.getColor(R.color.colorPrimary, null))
         val toggle = ActionBarDrawerToggle(
                 this, drawer_layout, nowMeetingToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
         drawer_layout.addDrawerListener(toggle)

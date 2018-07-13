@@ -21,18 +21,22 @@ import android.support.v7.app.AppCompatActivity
 import android.text.TextUtils
 import android.util.Log
 import android.view.View
-import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
-import android.widget.Toast
+import com.blankj.utilcode.util.BarUtils
+import com.blankj.utilcode.util.LogUtils
 import com.hxht.mobile.committee.R
-import com.hxht.mobile.committee.dialog.NormalDialog
 import com.hxht.mobile.committee.entity.Meet
-import com.qmuiteam.qmui.util.QMUIStatusBarHelper
 import com.qmuiteam.qmui.widget.dialog.QMUITipDialog
+import com.yanzhenjie.kalle.Kalle
+import com.yanzhenjie.kalle.KalleConfig
+import com.yanzhenjie.kalle.OkHttpConnectFactory
+import com.yanzhenjie.kalle.simple.SimpleCallback
+import com.yanzhenjie.kalle.simple.SimpleResponse
 import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.android.synthetic.main.content_login.*
 import org.json.JSONObject
+import java.lang.Exception
 import java.util.*
 
 
@@ -49,7 +53,9 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         setSupportActionBar(loginToolbar)
-        QMUIStatusBarHelper.translucent(this)
+        // 设置状态栏底色颜色
+//        BarUtils.setNavBarColor(this, resources.getColor(R.color.colorPrimary, null))
+        BarUtils.setStatusBarColor(this, resources.getColor(R.color.colorPrimary, null))
         val sharedPreferences = getSharedPreferences(LOGIN_TOKEN, 0)
         // Simulate network access.
         // token verify before network
@@ -73,12 +79,10 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             }
             false
         })
-
-        sign_in_button.setOnClickListener { attemptLogin() }
-
-        tipDialog = QMUITipDialog.Builder(this).setIconType(QMUITipDialog.Builder.ICON_TYPE_LOADING)
-                .setTipWord("正在加载")
-                .create()
+        sign_in_button.setOnClickListener { view ->
+            attemptLogin()
+        }
+//        sign_in_button.setOnClickListener { attemptLogin() }
     }
 
     private fun populateAutoComplete() {
@@ -119,36 +123,66 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
      * 登录验证通过方法
      */
     private fun loginStart(username: String, psd: String) {
-        Thread.sleep(2000)
+
+        val tipDialog = QMUITipDialog.Builder(this)
+                .setIconType(QMUITipDialog.Builder.ICON_TYPE_LOADING)
+                .setTipWord("正在登录")
+                .create()
+        tipDialog.show()
+        /**
+         * 网络登录验证
+         */
+        KalleConfig.newBuilder()
+                .connectFactory(OkHttpConnectFactory.newBuilder().build())
+                .build()
+
+        Kalle.post("http://www.example.com")
+                .setHeader("name", "kalle") // 设置请求头，会覆盖默认头和之前添加的头。
+                .param("name", "kalle") // 添加请求参数。
+                .perform(object : SimpleCallback<String>() {
+                    override fun onResponse(response: SimpleResponse<String, String>?) {
+                        tipDialog.dismiss()
+                        LogUtils.i(response)
+                        val intent = Intent(this@LoginActivity, NowMeetingActivity::class.java)
+                        intent.putExtra("meet", Meet("王老汉碰瓷案", Date()))
+                        startActivityForResult(intent, 0)
+                    }
+
+                    override fun onException(e: Exception?) {
+                        super.onException(e)
+                        tipDialog.dismiss()
+                    }
+                })
         if (username == "username" && psd == "password") {
-            tipDialog?.dismiss()
+//            Thread.sleep(2000)
+//            tipDialog.dismiss()
             val sharedPreferences = getSharedPreferences(LOGIN_TOKEN, 0)
             val editor = sharedPreferences.edit()
             editor.putString("username", username)
             editor.putString("password", psd)
             editor.apply()
 
-            val selfDialog = NormalDialog(this)
-            selfDialog.setTitle("找到会议啦")
-            selfDialog.setMessage("你现在是不是想要参加会议：王老汉碰瓷案?")
-            selfDialog.setYesClickListener("是的", object : NormalDialog.YesClickListener {
-                override fun onYesClick() {
-                    Toast.makeText(this@LoginActivity, "点击了--确定--按钮", Toast.LENGTH_LONG).show()
-                    selfDialog.dismiss()
-                    val intent = Intent(this@LoginActivity, NowMeetingActivity::class.java)
-                    intent.putExtra("meet", Meet("王老汉碰瓷案", Date()))
-                    startActivityForResult(intent, 0)
-                }
-            })
-            selfDialog.setNoClickListener("不是此会议", object : NormalDialog.NoClickListener {
-                override fun onNoClick() {
-                    Toast.makeText(this@LoginActivity, "点击了--取消--按钮", Toast.LENGTH_LONG).show()
-                    selfDialog.dismiss()
-                    val intent = Intent(this@LoginActivity, MeetListActivity::class.java)
-                    startActivity(intent)
-                }
-            })
-            selfDialog.show()
+//            val selfDialog = NormalDialog(this)
+//            selfDialog.setTitle("找到会议啦")
+//            selfDialog.setMessage("你现在是不是想要参加会议：王老汉碰瓷案?")
+//            selfDialog.setYesClickListener("是的", object : NormalDialog.YesClickListener {
+//                override fun onYesClick() {
+//                    Toast.makeText(this@LoginActivity, "点击了--确定--按钮", Toast.LENGTH_LONG).show()
+//                    selfDialog.dismiss()
+//                    val intent = Intent(this@LoginActivity, NowMeetingActivity::class.java)
+//                    intent.putExtra("meet", Meet("王老汉碰瓷案", Date()))
+//                    startActivityForResult(intent, 0)
+//                }
+//            })
+//            selfDialog.setNoClickListener("不是此会议", object : NormalDialog.NoClickListener {
+//                override fun onNoClick() {
+//                    Toast.makeText(this@LoginActivity, "点击了--取消--按钮", Toast.LENGTH_LONG).show()
+//                    selfDialog.dismiss()
+//                    val intent = Intent(this@LoginActivity, MeetListActivity::class.java)
+//                    startActivity(intent)
+//                }
+//            })
+//            selfDialog.show()
 
         } else {
             showProgress(false)
@@ -156,8 +190,6 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             password.requestFocus()
         }
     }
-
-    private var tipDialog: QMUITipDialog? = null
 
     /**
      * 登录验证
@@ -210,7 +242,6 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
 //            showProgress(true)
-            tipDialog?.show()
             /**
              * 验证通过开始登录任务
              * UserLoginTask
@@ -296,7 +327,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
     }
 
     override fun onLoaderReset(cursorLoader: Loader<Cursor>) {
-
+        Log.i("info", "reload")
     }
 
     object ProfileQuery {
@@ -380,6 +411,10 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             mAuthTask = null
             showProgress(false)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
     }
 
     companion object {
