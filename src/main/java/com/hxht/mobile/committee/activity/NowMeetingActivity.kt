@@ -28,10 +28,12 @@ import com.hxht.mobile.committee.R.id.number_progress_bar
 import com.hxht.mobile.committee.adapter.NowMeetingStuffAdapter
 import com.hxht.mobile.committee.common.Constants
 import com.hxht.mobile.committee.dialog.MyImageDialog
+import com.hxht.mobile.committee.dialog.NormalDialog
 import com.hxht.mobile.committee.entity.Meet
 import com.hxht.mobile.committee.entity.Stuff
 import com.hxht.mobile.committee.utils.MimeUtil
 import com.hxht.mobile.committee.utils.StorageUtil
+import com.qmuiteam.qmui.widget.dialog.QMUIDialog
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.yanzhenjie.kalle.Canceller
 import com.yanzhenjie.kalle.Headers
@@ -200,9 +202,18 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
-            R.id.action_settings -> true
+            R.id.action_settings ->
+                menuCreateVote()
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun menuCreateVote(): Boolean {
+        val intent = Intent(this@NowMeetingActivity, VoteActivity::class.java)
+        intent.putExtra("id", "336699999x")
+        intent.putExtra("meet", meet)
+        startActivityForResult(intent, 0)
+        return true
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -213,6 +224,25 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
             }
             R.id.nav_change_meet -> {
 
+                val selfDialog = NormalDialog(this)
+                selfDialog.setTitle("切换会议")
+                selfDialog.setMessage("确定想要更换当前正在进行的会议吗？\n点击‘确定’将会带您跳转到会议列表")
+                selfDialog.setYesClickListener("是的", object : NormalDialog.YesClickListener {
+                    override fun onYesClick() {
+                        Toast.makeText(this@NowMeetingActivity, "点击了--确定--按钮", Toast.LENGTH_LONG).show()
+                        selfDialog.dismiss()
+                        val intent = Intent(this@NowMeetingActivity, MeetListActivity::class.java)
+                        startActivity(intent)
+                    }
+                })
+                selfDialog.setNoClickListener("取消", object : NormalDialog.NoClickListener {
+                    override fun onNoClick() {
+                        Toast.makeText(this@NowMeetingActivity, "点击了--取消--按钮", Toast.LENGTH_LONG).show()
+                        selfDialog.dismiss()
+                    }
+                })
+                selfDialog.show()
+//                Toast.makeText(this@NowMeetingActivity, "按钮", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -360,7 +390,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
                 val temp = Intent(this@NowMeetingActivity, ChooseVoteActivity::class.java)
                 temp.putExtra("voteTitle", voteTitle)
                 temp.putExtra("vote", vote)
-                intent.putExtra("meet", meet)
+                temp.putExtra("meet", meet)
                 startActivityForResult(temp, 0)
             }
             builder.show()

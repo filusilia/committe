@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.Toast
+import com.blankj.utilcode.util.BarUtils
 import com.chaychan.viewlib.PowerfulEditText
 import com.hxht.mobile.committee.R
 import com.hxht.mobile.committee.dialog.NormalDialog
@@ -31,10 +32,11 @@ class VoteActivity : AppCompatActivity() {
         setContentView(R.layout.activity_vote)
         toolbar.title = "创建投票"
         setSupportActionBar(toolbar)
+        BarUtils.setStatusBarColor(this, resources.getColor(R.color.colorPrimary, null))
 
         meet = intent.getSerializableExtra("meet") as Meet
         fab.setOnClickListener { view ->
-            if (TextUtils.isEmpty(powerfulEditText?.text)){
+            if (TextUtils.isEmpty(powerfulEditText?.text)) {
                 Snackbar.make(view, "请填写本次的标题", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show()
                 return@setOnClickListener
@@ -42,38 +44,37 @@ class VoteActivity : AppCompatActivity() {
             val arrayList = arrayListOf<String>()
             voteScrollViewChild?.forEachChild { view ->
                 val temp = view as PowerfulEditText
-                if (!TextUtils.isEmpty(temp.text)){
+                if (!TextUtils.isEmpty(temp.text)) {
                     arrayList.add(temp.text.toString())
                 }
             }
-            if (arrayList.size==0) {
+            if (arrayList.size == 0) {
                 Snackbar.make(view, "请填写投票项", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show()
                 return@setOnClickListener
             }
             val hintDialog = NormalDialog(this)
             hintDialog.setTitle(powerfulEditText?.text.toString())
-            hintDialog.setMessage("你的投票选项为：$arrayList")
-            hintDialog.setYesClickListener("没问题", object : NormalDialog.YesClickListener {
+            hintDialog.setMessage("您创建的投票选项为：$arrayList")
+            hintDialog.setYesClickListener("确定", object : NormalDialog.YesClickListener {
                 override fun onYesClick() {
                     Toast.makeText(this@VoteActivity, "点击了--确定--按钮", Toast.LENGTH_LONG).show()
                     hintDialog.dismiss()
                     val intent = Intent(this@VoteActivity, NowMeetingActivity::class.java)
-                    intent.putExtra("voteTitle",powerfulEditText?.text.toString())
-                    intent.putExtra("vote",arrayList)
+                    intent.putExtra("voteTitle", powerfulEditText?.text.toString())
+                    intent.putExtra("vote", arrayList)
                     intent.putExtra("meet", meet)
                     startActivityForResult(intent, 0)
                 }
             })
-            hintDialog.setNoClickListener("我觉得不行", object : NormalDialog.NoClickListener {
+            hintDialog.setNoClickListener("取消", object : NormalDialog.NoClickListener {
                 override fun onNoClick() {
-                    Toast.makeText(this@VoteActivity, "点击了--取消--按钮", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this@VoteActivity, "点击了--取消--按钮", Toast.LENGTH_LONG).show()
                     hintDialog.dismiss()
                 }
             })
 
             hintDialog.show()
-
             Log.i(powerfulEditText?.text.toString(), arrayList.toString())
         }
         constraintLayout = this.findViewById(R.id.voteLayout)
@@ -84,6 +85,8 @@ class VoteActivity : AppCompatActivity() {
         val url = intent.getStringExtra("url")
         powerfulEditText?.setOnRightClickListener { p0 ->
             Log.w("tag", p0?.id.toString())
+            p0.isFocusable = true
+            p0.isFocusableInTouchMode = true
             addVote()
         }
     }
@@ -94,22 +97,23 @@ class VoteActivity : AppCompatActivity() {
         powerfulEditTextChild.id = View.generateViewId()
 //        powerfulEditTextChild.hint = getString(R.string.createVoteDialogHint)
         powerfulEditTextChild.hint = "请填写本投票项"
+        powerfulEditTextChild.textSize = 18.00f
 //        powerfulEditTextChild.right = R.drawable.ic_dialog_subtract
 //        powerfulEditTextChild.setCompoundDrawablesWithIntrinsicBounds(null, null, resources.getDrawable(R.drawable.ic_dialog_subtract, null), null)
 
         val rightDrawable = resources.getDrawable(R.drawable.ic_dialog_subtract, null)
-        rightDrawable.setBounds(0, 0, 60, 50)
+        rightDrawable.setBounds(0, 0, 60, 60)
         powerfulEditTextChild.setCompoundDrawables(null, null, rightDrawable, null)
         powerfulEditTextChild.setOnRightClickListener { param ->
             //获取当前控件的位置，如果是最后一个不处理，如果在上面需要把下面的控件布局位置修改。
             //不需要单独判断最上面，因为最上面的主题也是powerEdit
-            val last: Int = (voteScrollViewChild?.childCount ?: 1) - 1
-            val now = voteScrollViewChild!!.indexOfChild(param)
-            if (now != last) {
-                val up = voteScrollViewChild?.getChildAt(now - 1) as PowerfulEditText
-                val down = voteScrollViewChild?.getChildAt(now + 1) as PowerfulEditText
+//            val last: Int = (voteScrollViewChild?.childCount ?: 1) - 1
+//            val now = voteScrollViewChild!!.indexOfChild(param)
+//            if (now != last) {
+//                val up = voteScrollViewChild?.getChildAt(now - 1) as PowerfulEditText
+//                val down = voteScrollViewChild?.getChildAt(now + 1) as PowerfulEditText
 
-                val tempConstraintSet = ConstraintSet()
+//                val tempConstraintSet = ConstraintSet()
 //                tempConstraintSet.clone(voteScrollViewChild)
 //                tempConstraintSet.constrainHeight(down.id, ConstraintLayout.LayoutParams.WRAP_CONTENT)
 //                tempConstraintSet.constrainWidth(down.id, ConstraintLayout.LayoutParams.MATCH_PARENT)
@@ -117,7 +121,7 @@ class VoteActivity : AppCompatActivity() {
 //                tempConstraintSet.connect(down.id, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END, 512)
 //                tempConstraintSet.connect(down.id, ConstraintSet.TOP, up.id, ConstraintSet.BOTTOM)
 //                tempConstraintSet.applyTo(voteScrollViewChild)
-            }
+//            }
             voteScrollViewChild!!.removeView(powerfulEditTextChild)
         }
         powerfulEditTextChild.requestFocus()

@@ -10,6 +10,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import com.blankj.utilcode.util.BarUtils
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.hxht.mobile.committee.R
 import com.hxht.mobile.committee.adapter.ChooseVoteAdapter
@@ -28,6 +29,7 @@ class ChooseVoteActivity : AppCompatActivity() {
         setContentView(R.layout.activity_choose_vote)
         includeToolbar.title = "选择投票"
         setSupportActionBar(includeToolbar)
+        BarUtils.setStatusBarColor(this, resources.getColor(R.color.colorPrimary, null))
 //        complete.setOnClickListener { view ->
 //            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                    .setAction("Action", null).show()

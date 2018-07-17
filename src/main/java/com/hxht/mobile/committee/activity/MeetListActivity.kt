@@ -16,6 +16,7 @@ import com.hxht.mobile.committee.adapter.MeetListAdapter
 import com.hxht.mobile.committee.common.Constants
 import com.hxht.mobile.committee.dialog.NormalDialog
 import com.hxht.mobile.committee.entity.Meet
+import com.qmuiteam.qmui.widget.dialog.QMUIDialog
 import kotlinx.android.synthetic.main.meet_list.*
 import java.util.*
 
@@ -73,7 +74,7 @@ class MeetListActivity : AppCompatActivity() {
                 meets.add(Meet("现在，我们将会对张老三进行正义的审判！", Date()))
                 meets.add(Meet("现在，我们将会对张老三进行正义的审判！", Date()))
                 meets.add(Meet("现在，我们将会对张老三进行正义的审判！", Date()))
-                if (meets.size>10) {
+                if (meets.size > 10) {
                     sampleRecyclerAdapter.loadMoreEnd()
                 } else {
                     sampleRecyclerAdapter.loadMoreComplete()
@@ -85,17 +86,46 @@ class MeetListActivity : AppCompatActivity() {
 //        // 当列表滑动到倒数第N个Item的时候(默认是1)回调onLoadMoreRequested方法
 //        sampleRecyclerAdapter.setPreLoadNumber(int);
         // 没有数据的时候默认显示该布局
-        val view = this.layoutInflater.inflate(R.layout.activity_empty,null)
+        val view = this.layoutInflater.inflate(R.layout.activity_empty, null)
         view.findViewById<TextView>(R.id.emptyTextHint).text = "没有找到案件"
         sampleRecyclerAdapter.emptyView = view
         recyclerView.adapter = sampleRecyclerAdapter
     }
 
     override fun onBackPressed() {
+        val selfDialog = NormalDialog(this)
+        selfDialog.setTitle("返回之前的会议")
+        selfDialog.setMessage("确定想要退回到刚才的会议吗？")
+        selfDialog.setYesClickListener("是的", object : NormalDialog.YesClickListener {
+            override fun onYesClick() {
+                back()
+                selfDialog.dismiss()
+            }
+        })
+        selfDialog.setNoClickListener("取消", object : NormalDialog.NoClickListener {
+            override fun onNoClick() {
+                selfDialog.dismiss()
+            }
+        })
+        selfDialog.show()
+
+//        QMUIDialog.MessageDialogBuilder(this)
+//                .setTitle("切换当前会议")
+//                .setMessage("确定想要更换当前正在进行的会议吗？\n点击‘确定’将会带您跳转到会议列表")
+//                .addAction("取消") { dialog, index ->
+//                    dialog.dismiss()
+//                }
+//                .addAction("确定") { dialog, index ->
+//                    dialog.dismiss()
+//                    super.onBackPressed()
+//                }
+    }
+
+    fun back() {
         super.onBackPressed()
     }
 
-    private fun meetGo(meet:Meet) {
+    private fun meetGo(meet: Meet) {
         val selfDialog = NormalDialog(this)
 
         selfDialog.setTitle("选择会议")

@@ -5,6 +5,7 @@
     android:background="#11ffffff">
 
     <LinearLayout
+        android:id="@+id/normalDialogParent"
         android:layout_width="260dp"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
