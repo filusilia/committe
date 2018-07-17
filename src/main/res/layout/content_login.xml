@@ -106,9 +106,8 @@
 
             </android.support.design.widget.TextInputLayout>
 
-            <com.qmuiteam.qmui.alpha.QMUIAlphaButton
+            <com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton
                 android:id="@+id/sign_in_button"
-                style="@style/QMUI.RoundButton"
                 android:layout_width="200dp"
                 android:layout_height="50dp"
                 android:layout_gravity="center"

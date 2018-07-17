@@ -33,7 +33,6 @@ import com.hxht.mobile.committee.entity.Meet
 import com.hxht.mobile.committee.entity.Stuff
 import com.hxht.mobile.committee.utils.MimeUtil
 import com.hxht.mobile.committee.utils.StorageUtil
-import com.qmuiteam.qmui.widget.dialog.QMUIDialog
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.yanzhenjie.kalle.Canceller
 import com.yanzhenjie.kalle.Headers
@@ -45,7 +44,9 @@ import kotlinx.android.synthetic.main.content_now_meeting.*
 import kotlinx.android.synthetic.main.now_meeting_app_bar.*
 import java.util.*
 
-
+/**
+ * 当前会议 activity
+ */
 class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var recyclerView: RecyclerView
@@ -113,12 +114,12 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
                     intent.putExtra("url", stuff.fileAddress)
                     intent.putExtra("name", stuff.fileName)
                     intent.putExtra("meet", meet)
-                    startActivityForResult(intent, 0)
+                    startActivityForResult(intent, Constants.NOW_MEETING_CODE)
                 }
                 "mp4", "flv", "rmvb", "avi" -> {
                     val intent = Intent(this@NowMeetingActivity, ExpPlayerActivity::class.java)
                     intent.putExtra("url", stuff.fileAddress)
-                    startActivityForResult(intent, 0)
+                    startActivityForResult(intent, Constants.NOW_MEETING_CODE)
                 }
                 "swf" -> {
                     Toast.makeText(this, "视频格式暂不支持！", Toast.LENGTH_LONG).show()
@@ -212,7 +213,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         val intent = Intent(this@NowMeetingActivity, VoteActivity::class.java)
         intent.putExtra("id", "336699999x")
         intent.putExtra("meet", meet)
-        startActivityForResult(intent, 0)
+        startActivityForResult(intent, Constants.NOW_MEETING_CODE)
         return true
     }
 
@@ -232,7 +233,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
                         Toast.makeText(this@NowMeetingActivity, "点击了--确定--按钮", Toast.LENGTH_LONG).show()
                         selfDialog.dismiss()
                         val intent = Intent(this@NowMeetingActivity, MeetListActivity::class.java)
-                        startActivity(intent)
+                        startActivityForResult(intent,Constants.NOW_MEETING_CODE)
                     }
                 })
                 selfDialog.setNoClickListener("取消", object : NormalDialog.NoClickListener {
@@ -391,7 +392,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
                 temp.putExtra("voteTitle", voteTitle)
                 temp.putExtra("vote", vote)
                 temp.putExtra("meet", meet)
-                startActivityForResult(temp, 0)
+                startActivityForResult(temp, Constants.NOW_MEETING_CODE)
             }
             builder.show()
         }

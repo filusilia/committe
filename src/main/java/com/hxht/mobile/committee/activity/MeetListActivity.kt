@@ -135,7 +135,7 @@ class MeetListActivity : AppCompatActivity() {
                 selfDialog.dismiss()
                 val intent = Intent(this@MeetListActivity, NowMeetingActivity::class.java)
                 intent.putExtra("meet", meet)
-                startActivityForResult(intent, 0)
+                startActivityForResult(intent, Constants.MEETING_LIST_CODE)
             }
         })
         selfDialog.setNoClickListener("好像不对", object : NormalDialog.NoClickListener {

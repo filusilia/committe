@@ -14,6 +14,7 @@ import com.blankj.utilcode.util.BarUtils
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.hxht.mobile.committee.R
 import com.hxht.mobile.committee.adapter.ChooseVoteAdapter
+import com.hxht.mobile.committee.common.Constants
 import com.hxht.mobile.committee.dialog.NormalDialog
 import com.hxht.mobile.committee.entity.Meet
 import kotlinx.android.synthetic.main.activity_choose_vote.*
@@ -91,7 +92,7 @@ class ChooseVoteActivity : AppCompatActivity() {
                 selfDialog.dismiss()
                 val intent = Intent(this@ChooseVoteActivity, NowMeetingActivity::class.java)
                 intent.putExtra("meet", meet)
-                startActivityForResult(intent, 0)
+                startActivityForResult(intent, Constants.CHOOSE_VOTE_CODE)
             }
         })
         selfDialog.setNoClickListener("我看错了再选", object : NormalDialog.NoClickListener {

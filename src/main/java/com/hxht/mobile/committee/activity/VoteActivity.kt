@@ -14,6 +14,7 @@ import android.widget.Toast
 import com.blankj.utilcode.util.BarUtils
 import com.chaychan.viewlib.PowerfulEditText
 import com.hxht.mobile.committee.R
+import com.hxht.mobile.committee.common.Constants
 import com.hxht.mobile.committee.dialog.NormalDialog
 import com.hxht.mobile.committee.entity.Meet
 import kotlinx.android.synthetic.main.activity_vote.*
@@ -64,7 +65,7 @@ class VoteActivity : AppCompatActivity() {
                     intent.putExtra("voteTitle", powerfulEditText?.text.toString())
                     intent.putExtra("vote", arrayList)
                     intent.putExtra("meet", meet)
-                    startActivityForResult(intent, 0)
+                    startActivityForResult(intent, Constants.VOTE_CODE)
                 }
             })
             hintDialog.setNoClickListener("取消", object : NormalDialog.NoClickListener {

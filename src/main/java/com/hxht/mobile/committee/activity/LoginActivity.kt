@@ -26,6 +26,7 @@ import android.widget.TextView
 import com.blankj.utilcode.util.BarUtils
 import com.blankj.utilcode.util.LogUtils
 import com.hxht.mobile.committee.R
+import com.hxht.mobile.committee.common.Constants
 import com.hxht.mobile.committee.entity.Meet
 import com.qmuiteam.qmui.widget.dialog.QMUITipDialog
 import com.yanzhenjie.kalle.Kalle
@@ -151,7 +152,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                         LogUtils.i(response)
                         val intent = Intent(this@LoginActivity, NowMeetingActivity::class.java)
                         intent.putExtra("meet", Meet("王老汉碰瓷案", Date()))
-                        startActivityForResult(intent, 0)
+                        startActivityForResult(intent, Constants.LOGIN_CODE)
 
                         Timer().schedule(object : TimerTask() {
                             override fun run() {
