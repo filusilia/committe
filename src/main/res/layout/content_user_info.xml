@@ -5,60 +5,51 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".activity.ChooseVoteActivity"
-    tools:showIn="@layout/activity_choose_vote">
+    tools:context=".activity.UserInfoActivity">
 
     <TextView
-        android:id="@+id/chooseVoteHint"
+        android:id="@+id/userHint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="@color/qmui_config_color_gray_5"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="提示"
-        android:textColor="@color/slateblue"
+        android:text="个人信息"
         android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <com.qmuiteam.qmui.widget.QMUIRadiusImageView
+        android:id="@+id/userHeadImg"
+        android:layout_width="128dp"
+        android:layout_height="128dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/user"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/userHint"
+        app:qmui_is_circle="true"
+        app:qmui_selected_border_color="?attr/qmui_config_color_gray_4"
+        app:qmui_selected_border_width="2dp"
+        app:qmui_selected_mask_color="?attr/qmui_config_color_gray_8" />
+
     <TextView
-        android:id="@+id/chooseVoteHint2"
+        android:id="@+id/userName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text=""
+        android:text="姓名"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/chooseVoteHint" />
-
-    <TextView
-        android:id="@+id/chooseVoteTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:text=""
-        android:textSize="36sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/chooseVoteHint2" />
-
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/chooseVoteChild"
-        android:layout_width="784dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/chooseVoteTitle">
-
-    </android.support.v7.widget.RecyclerView>
+        app:layout_constraintTop_toBottomOf="@+id/userHeadImg" />
 
 </android.support.constraint.ConstraintLayout>

@@ -4,25 +4,25 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activity.MeetListActivity">
+    android:fitsSystemWindows="true"
+    tools:context=".activity.UserInfoActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fitsSystemWindows="false"
         android:theme="@style/AppTheme.AppBarOverlay">
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/meetToolbar"
+        <android.support.v7.widget.Toolbar xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/userToolbar"
             android:layout_width="match_parent"
-            android:navigationIcon="?android:attr/actionModeCloseDrawable"
-            app:navigationIcon="?android:attr/actionModeCloseDrawable"
             android:layout_height="?android:attr/actionBarSize"
             android:background="?android:attr/colorPrimary"
+            android:navigationIcon="?android:attr/actionModeCloseDrawable"
+            app:navigationIcon="?android:attr/actionModeCloseDrawable"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/meet_list_recycler_view"/>
+    <include layout="@layout/content_user_info" />
 
 </android.support.design.widget.CoordinatorLayout>

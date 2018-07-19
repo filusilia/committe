@@ -152,7 +152,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                         LogUtils.i(response)
                         val intent = Intent(this@LoginActivity, NowMeetingActivity::class.java)
                         intent.putExtra("meet", Meet("王老汉碰瓷案", Date()))
-                        startActivityForResult(intent, Constants.LOGIN_CODE)
+                        startActivity(intent)
 
                         Timer().schedule(object : TimerTask() {
                             override fun run() {

@@ -16,4 +16,5 @@ object Constants {
     const val VOTE_CODE:Int = 1003
     const val CHOOSE_VOTE_CODE:Int = 1004
     const val EXP_PLAYER_CODE:Int = 1005
+    const val USER_INFO_CODE:Int = 1005
 }

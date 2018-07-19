@@ -50,7 +50,7 @@ class ChooseVoteActivity : AppCompatActivity() {
             }
         }
 
-        chooseVoteHint2.text = "请根据主题进行投票。"
+        chooseVoteHint2.text = "请根据下方的投票主题进行投票。"
         initVoteSelect(title, vote)
     }
 

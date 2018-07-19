@@ -1,6 +1,5 @@
 package com.hxht.mobile.committee.activity
 
-import android.content.Intent
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
 import android.support.constraint.ConstraintSet
@@ -8,13 +7,13 @@ import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.text.TextUtils
 import android.util.Log
+import android.view.MenuItem
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.Toast
 import com.blankj.utilcode.util.BarUtils
 import com.chaychan.viewlib.PowerfulEditText
 import com.hxht.mobile.committee.R
-import com.hxht.mobile.committee.common.Constants
 import com.hxht.mobile.committee.dialog.NormalDialog
 import com.hxht.mobile.committee.entity.Meet
 import kotlinx.android.synthetic.main.activity_vote.*
@@ -43,7 +42,7 @@ class VoteActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
             val arrayList = arrayListOf<String>()
-            voteScrollViewChild?.forEachChild { view ->
+            voteScrollViewChild?.forEachChild { view: View ->
                 val temp = view as PowerfulEditText
                 if (!TextUtils.isEmpty(temp.text)) {
                     arrayList.add(temp.text.toString())
@@ -61,11 +60,13 @@ class VoteActivity : AppCompatActivity() {
                 override fun onYesClick() {
                     Toast.makeText(this@VoteActivity, "点击了--确定--按钮", Toast.LENGTH_LONG).show()
                     hintDialog.dismiss()
-                    val intent = Intent(this@VoteActivity, NowMeetingActivity::class.java)
+//                    val intent = Intent()
                     intent.putExtra("voteTitle", powerfulEditText?.text.toString())
                     intent.putExtra("vote", arrayList)
                     intent.putExtra("meet", meet)
-                    startActivityForResult(intent, Constants.VOTE_CODE)
+                    this@VoteActivity.setResult(0,intent)
+                    this@VoteActivity.finish()
+//                    startActivityForResult(intent, Constants.VOTE_CODE)
                 }
             })
             hintDialog.setNoClickListener("取消", object : NormalDialog.NoClickListener {
@@ -141,5 +142,17 @@ class VoteActivity : AppCompatActivity() {
 //        constraintSet.connect(powerfulEditTextChild.id, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END, 512)
 //        constraintSet.connect(powerfulEditTextChild.id, ConstraintSet.TOP, lastView!!.id, ConstraintSet.BOTTOM)
 //        constraintSet.applyTo(voteScrollViewChild)
+    }
+
+    /**
+     * 菜单方法
+     */
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        super.onBackPressed()
+        this.finish()
+        return super.onOptionsItemSelected(item)
     }
 }

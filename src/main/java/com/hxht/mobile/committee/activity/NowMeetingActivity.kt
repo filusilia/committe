@@ -43,6 +43,7 @@ import kotlinx.android.synthetic.main.activity_now_meeting.*
 import kotlinx.android.synthetic.main.content_now_meeting.*
 import kotlinx.android.synthetic.main.now_meeting_app_bar.*
 import java.util.*
+import kotlin.collections.ArrayList
 
 /**
  * 当前会议 activity
@@ -75,7 +76,6 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
             nowTitle.text = "当前会议： ${meet?.meetName}"
         }
         initDemoFile()
-        initDemoVote()
 //        val btn = findViewById<Button>(R.id.nowMeetingBtn)
 //        btn.setOnClickListener {
 //            Log.i("info", "cancel btn")
@@ -198,6 +198,9 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         return true
     }
 
+    /**
+     * 菜单方法
+     */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -213,7 +216,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         val intent = Intent(this@NowMeetingActivity, VoteActivity::class.java)
         intent.putExtra("id", "336699999x")
         intent.putExtra("meet", meet)
-        startActivityForResult(intent, Constants.NOW_MEETING_CODE)
+        startActivityForResult(intent, Constants.VOTE_CODE)
         return true
     }
 
@@ -222,6 +225,8 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         when (item.itemId) {
             R.id.nav_user_info -> {
                 // Handle the camera action
+                val intent = Intent(this@NowMeetingActivity, UserInfoActivity::class.java)
+                startActivityForResult(intent,Constants.NOW_MEETING_CODE)
             }
             R.id.nav_change_meet -> {
 
@@ -233,7 +238,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
                         Toast.makeText(this@NowMeetingActivity, "点击了--确定--按钮", Toast.LENGTH_LONG).show()
                         selfDialog.dismiss()
                         val intent = Intent(this@NowMeetingActivity, MeetListActivity::class.java)
-                        startActivityForResult(intent,Constants.NOW_MEETING_CODE)
+                        startActivityForResult(intent, Constants.NOW_MEETING_CODE)
                     }
                 })
                 selfDialog.setNoClickListener("取消", object : NormalDialog.NoClickListener {
@@ -359,6 +364,27 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
                 })
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        LogUtils.i("$requestCode,$resultCode,$data")
+        if (null != data) {
+            when (requestCode) {
+                Constants.VOTE_CODE -> {
+                    val voteTitle = data.getStringExtra("voteTitle")
+                    var vote = data.getStringArrayListExtra("vote")
+                    if (null == voteTitle || null == vote || vote.isEmpty()) {
+                        LogUtils.i("投票信息不完整 跳过。")
+                    }
+                    initDemoVote(voteTitle, vote)
+                }
+                else -> {
+
+                }
+            }
+        }
+
+    }
+
     private fun initDemoFile() {
         files.add(Stuff(0, "61781299_p0", "jpg", "http://104.224.152.210:8080/pic/61781299_p0.jpg"))
         files.add(Stuff(13, "mp-alice-exec.jar", "jar", "http://104.224.152.210:8080/pic/mp-alice-exec.jar"))
@@ -376,25 +402,20 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         files.add(Stuff(9, "test_video.jpg", "jpg", "http://104.224.152.210:8080/pic/test_video.jpg"))
     }
 
-    private fun initDemoVote() {
-        var voteTitle = intent.getStringExtra("voteTitle")
-//        voteTitle = "好吧这次就决定审判火箭队了！"
-        val vote = intent.getStringArrayListExtra("vote")
+    private fun initDemoVote(voteTitle: String, vote: ArrayList<String>) {
 //        val vote = arrayListOf("还行，就判他五年 ","不行，这么认真的队伍要无罪释放 "," 爱咋咋地我弃权")
-        if (vote != null) {
-            val builder = AlertDialog.Builder(this@NowMeetingActivity)
-            builder.setCancelable(false)
-            builder.setTitle("发现投票项")
-            builder.setMessage("有人发起了投票\n将会带你跳转到新页面进行投票。")
-            builder.setPositiveButton("好的") { _: DialogInterface, _: Int ->
-                Log.i("info", "okle ")
-                val temp = Intent(this@NowMeetingActivity, ChooseVoteActivity::class.java)
-                temp.putExtra("voteTitle", voteTitle)
-                temp.putExtra("vote", vote)
-                temp.putExtra("meet", meet)
-                startActivityForResult(temp, Constants.NOW_MEETING_CODE)
-            }
-            builder.show()
+        val builder = AlertDialog.Builder(this@NowMeetingActivity)
+        builder.setCancelable(false)
+        builder.setTitle("发现投票项")
+        builder.setMessage("有人发起了投票\n将会带你跳转到新页面进行投票。")
+        builder.setPositiveButton("好的") { _: DialogInterface, _: Int ->
+            Log.i("info", "okle ")
+            val temp = Intent(this@NowMeetingActivity, ChooseVoteActivity::class.java)
+            temp.putExtra("voteTitle", voteTitle)
+            temp.putExtra("vote", vote)
+            temp.putExtra("meet", meet)
+            startActivityForResult(temp, Constants.NOW_MEETING_CODE)
         }
+        builder.show()
     }
 }

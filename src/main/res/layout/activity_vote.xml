@@ -16,6 +16,8 @@
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
+            android:navigationIcon="?android:attr/actionModeCloseDrawable"
+            app:navigationIcon="?android:attr/actionModeCloseDrawable"
             android:layout_height="?android:attr/actionBarSize"
             android:background="?android:attr/colorPrimary"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
