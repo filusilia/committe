@@ -4,7 +4,10 @@ import com.chad.library.adapter.base.entity.MultiItemEntity
 import java.io.Serializable
 import java.util.*
 
-data class Meet(val meetName:String,val meetTime :Date) : MultiItemEntity,Serializable {
+data class Meet(val meetName:String,val meetTime :Date?,val meetCover:String?) : MultiItemEntity,Serializable {
+
+    constructor(meetName: String) : this(meetName,null,null)
+
     private var itemType: Int = 0
 
     fun MultipleItem(itemType: Int) {

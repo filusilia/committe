@@ -151,7 +151,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                         tipDialog.show()
                         LogUtils.i(response)
                         val intent = Intent(this@LoginActivity, NowMeetingActivity::class.java)
-                        intent.putExtra("meet", Meet("王老汉碰瓷案", Date()))
+                        intent.putExtra("meet", Meet("王老汉碰瓷案"))
                         startActivity(intent)
 
                         Timer().schedule(object : TimerTask() {

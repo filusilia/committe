@@ -6,7 +6,9 @@ import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
+import android.support.constraint.ConstraintLayout
 import android.support.design.widget.NavigationView
+import android.support.v4.content.ContextCompat
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
@@ -17,6 +19,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.TextView
 import android.widget.Toast
 import com.blankj.utilcode.util.BarUtils
@@ -33,6 +36,8 @@ import com.hxht.mobile.committee.entity.Meet
 import com.hxht.mobile.committee.entity.Stuff
 import com.hxht.mobile.committee.utils.MimeUtil
 import com.hxht.mobile.committee.utils.StorageUtil
+import com.qmuiteam.qmui.util.QMUIDisplayHelper
+import com.qmuiteam.qmui.widget.popup.QMUIPopup
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.yanzhenjie.kalle.Canceller
 import com.yanzhenjie.kalle.Headers
@@ -43,7 +48,6 @@ import kotlinx.android.synthetic.main.activity_now_meeting.*
 import kotlinx.android.synthetic.main.content_now_meeting.*
 import kotlinx.android.synthetic.main.now_meeting_app_bar.*
 import java.util.*
-import kotlin.collections.ArrayList
 
 /**
  * 当前会议 activity
@@ -76,6 +80,14 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
             nowTitle.text = "当前会议： ${meet?.meetName}"
         }
         initDemoFile()
+        initAdapter()
+        nowTitle.setOnClickListener { view ->
+            initNormalPopupIfNeed()
+            mNormalPopup?.setAnimStyle(QMUIPopup.ANIM_GROW_FROM_CENTER)
+            mNormalPopup?.setPreferredDirection(QMUIPopup.DIRECTION_TOP)
+            mNormalPopup?.show(view)
+        }
+
 //        val btn = findViewById<Button>(R.id.nowMeetingBtn)
 //        btn.setOnClickListener {
 //            Log.i("info", "cancel btn")
@@ -88,6 +100,118 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
 //            intent.putExtra("meet", meet)
 //            startActivityForResult(intent, 0)
 //        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Kalle.Download.cancel(cancelTag)
+    }
+
+    private var firstTime = 0L
+    override fun onBackPressed() {
+        if (drawer_layout.isDrawerOpen(GravityCompat.START)) {
+            drawer_layout.closeDrawer(GravityCompat.START)
+        } else {
+            val secondTime = System.currentTimeMillis()
+            LogUtils.i(secondTime)
+            if (secondTime - firstTime > 2000) {
+                Toast.makeText(this@NowMeetingActivity, "再按一次退出程序", Toast.LENGTH_SHORT).show()
+                firstTime = secondTime
+            } else {
+                finish()
+                System.exit(0)
+            }
+//            super.onBackPressed()
+        }
+
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.main, menu)
+        return true
+    }
+
+    /**
+     * 菜单方法
+     */
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        return when (item.itemId) {
+            R.id.action_settings ->
+                menuCreateVote()
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun menuCreateVote(): Boolean {
+        val intent = Intent(this@NowMeetingActivity, VoteActivity::class.java)
+        intent.putExtra("id", "336699999x")
+        intent.putExtra("meet", meet)
+        startActivityForResult(intent, Constants.VOTE_CODE)
+        return true
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        // Handle navigation view item clicks here.
+        when (item.itemId) {
+            R.id.nav_user_info -> {
+                // Handle the camera action
+                val intent = Intent(this@NowMeetingActivity, UserInfoActivity::class.java)
+                startActivityForResult(intent, Constants.NOW_MEETING_CODE)
+            }
+            R.id.nav_change_meet -> {
+
+                val selfDialog = NormalDialog(this)
+                selfDialog.setTitle("切换会议")
+                selfDialog.setMessage("确定想要更换当前正在进行的会议吗？\n点击‘确定’将会带您跳转到会议列表")
+                selfDialog.setYesClickListener("是的", object : NormalDialog.YesClickListener {
+                    override fun onYesClick() {
+                        Toast.makeText(this@NowMeetingActivity, "点击了--确定--按钮", Toast.LENGTH_LONG).show()
+                        selfDialog.dismiss()
+                        val intent = Intent(this@NowMeetingActivity, MeetListActivity::class.java)
+                        startActivityForResult(intent, Constants.NOW_MEETING_CODE)
+                    }
+                })
+                selfDialog.setNoClickListener("取消", object : NormalDialog.NoClickListener {
+                    override fun onNoClick() {
+                        Toast.makeText(this@NowMeetingActivity, "点击了--取消--按钮", Toast.LENGTH_LONG).show()
+                        selfDialog.dismiss()
+                    }
+                })
+                selfDialog.show()
+//                Toast.makeText(this@NowMeetingActivity, "按钮", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        drawer_layout.closeDrawer(GravityCompat.START)
+        return true
+    }
+
+    private var mNormalPopup: QMUIPopup? = null
+    private fun initNormalPopupIfNeed() {
+        if (mNormalPopup == null) {
+            mNormalPopup = QMUIPopup(this, QMUIPopup.DIRECTION_BOTTOM)
+            val view: View? = View.inflate(this, R.layout.now_meeting_pop, null)
+            val con: ConstraintLayout = view!!.findViewById(R.id.popMeet)
+            val popMeetTitle = con.findViewById<TextView>(R.id.popMeetTitle)
+            popMeetTitle.text = "当前会议涉及案件：\n吴老二贪污\n张小虎偷电瓶\n隔壁李阿姨要次小孩"
+            popMeetTitle.setTextColor(ContextCompat.getColor(this, R.color.gray))
+            val popMeetParticipants = con.findViewById<TextView>(R.id.popMeetParticipants)
+            popMeetParticipants.text = "与会人员：佘太君、翠花、特朗普"
+            popMeetParticipants.setTextColor(ContextCompat.getColor(this, R.color.gray))
+            con.layoutParams = mNormalPopup?.generateLayoutParam(
+                    QMUIDisplayHelper.dp2px(this, 250), WRAP_CONTENT)
+            mNormalPopup?.setContentView(con)
+            mNormalPopup?.setOnDismissListener {
+                LogUtils.i("关闭了")
+            }
+        }
+    }
+
+    private fun initAdapter() {
         // 获取RecyclerView对象
         recyclerView = findViewById<View>(R.id.meetStuffRecycler) as RecyclerView
 
@@ -166,94 +290,6 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         view.findViewById<TextView>(R.id.emptyTextHint).text = "没有找到案件相关资料"
         sampleRecyclerAdapter.emptyView = view
         recyclerView.adapter = sampleRecyclerAdapter
-
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Kalle.Download.cancel(cancelTag)
-    }
-
-    private var firstTime = 0L
-    override fun onBackPressed() {
-        if (drawer_layout.isDrawerOpen(GravityCompat.START)) {
-            drawer_layout.closeDrawer(GravityCompat.START)
-        } else {
-            val secondTime = System.currentTimeMillis()
-            LogUtils.i(secondTime)
-            if (secondTime - firstTime > 2000) {
-                Toast.makeText(this@NowMeetingActivity, "再按一次退出程序", Toast.LENGTH_SHORT).show()
-                firstTime = secondTime
-            } else {
-                System.exit(0)
-            }
-//            super.onBackPressed()
-        }
-
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.main, menu)
-        return true
-    }
-
-    /**
-     * 菜单方法
-     */
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            R.id.action_settings ->
-                menuCreateVote()
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
-
-    private fun menuCreateVote(): Boolean {
-        val intent = Intent(this@NowMeetingActivity, VoteActivity::class.java)
-        intent.putExtra("id", "336699999x")
-        intent.putExtra("meet", meet)
-        startActivityForResult(intent, Constants.VOTE_CODE)
-        return true
-    }
-
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        // Handle navigation view item clicks here.
-        when (item.itemId) {
-            R.id.nav_user_info -> {
-                // Handle the camera action
-                val intent = Intent(this@NowMeetingActivity, UserInfoActivity::class.java)
-                startActivityForResult(intent,Constants.NOW_MEETING_CODE)
-            }
-            R.id.nav_change_meet -> {
-
-                val selfDialog = NormalDialog(this)
-                selfDialog.setTitle("切换会议")
-                selfDialog.setMessage("确定想要更换当前正在进行的会议吗？\n点击‘确定’将会带您跳转到会议列表")
-                selfDialog.setYesClickListener("是的", object : NormalDialog.YesClickListener {
-                    override fun onYesClick() {
-                        Toast.makeText(this@NowMeetingActivity, "点击了--确定--按钮", Toast.LENGTH_LONG).show()
-                        selfDialog.dismiss()
-                        val intent = Intent(this@NowMeetingActivity, MeetListActivity::class.java)
-                        startActivityForResult(intent, Constants.NOW_MEETING_CODE)
-                    }
-                })
-                selfDialog.setNoClickListener("取消", object : NormalDialog.NoClickListener {
-                    override fun onNoClick() {
-                        Toast.makeText(this@NowMeetingActivity, "点击了--取消--按钮", Toast.LENGTH_LONG).show()
-                        selfDialog.dismiss()
-                    }
-                })
-                selfDialog.show()
-//                Toast.makeText(this@NowMeetingActivity, "按钮", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        drawer_layout.closeDrawer(GravityCompat.START)
-        return true
     }
 
     private fun grantPermissions() {

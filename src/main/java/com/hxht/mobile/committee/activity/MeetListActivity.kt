@@ -17,8 +17,7 @@ import com.hxht.mobile.committee.adapter.MeetListAdapter
 import com.hxht.mobile.committee.common.Constants
 import com.hxht.mobile.committee.dialog.NormalDialog
 import com.hxht.mobile.committee.entity.Meet
-import com.qmuiteam.qmui.widget.dialog.QMUIDialog
-import kotlinx.android.synthetic.main.meet_list.*
+import kotlinx.android.synthetic.main.activity_meet_list.*
 import java.util.*
 
 
@@ -30,67 +29,16 @@ class MeetListActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.meet_list)
+        setContentView(R.layout.activity_meet_list)
         setSupportActionBar(meetToolbar)
         window.statusBarColor = ContextCompat.getColor(this, R.color.colorPrimaryDark)
         //透明状态
 //        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
         //透明导航
 //        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+        demoAdapter()
         initAdapter()
 
-        // 获取RecyclerView对象
-        recyclerView = findViewById<View>(R.id.my_recycler_view) as RecyclerView
-
-        // 创建线性布局管理器（默认是垂直方向）
-        val layoutManager = GridLayoutManager(this, 2)
-        // 为RecyclerView指定布局管理对象
-        recyclerView.layoutManager = layoutManager
-        // 创建Adapter
-        val sampleRecyclerAdapter = MeetListAdapter(meets)
-//        sampleRecyclerAdapter.setEmptyView(getView());
-        sampleRecyclerAdapter.onItemClickListener = BaseQuickAdapter.OnItemClickListener { adapter, view, position ->
-            Log.d("", "onItemClick: ")
-            val meet = sampleRecyclerAdapter.getItem(position)
-            if (meet != null) {
-                meetGo(meet)
-            }
-            Toast.makeText(this, "onItemClick$position", Toast.LENGTH_SHORT).show()
-        }
-        sampleRecyclerAdapter.setOnItemChildClickListener { adapter, view, position ->
-            Log.d("", "onItemChildClick: ")
-            val meet = sampleRecyclerAdapter.getItem(position)
-            if (meet != null) {
-                meetGo(meet)
-            }
-        }
-        sampleRecyclerAdapter.setOnLoadMoreListener({
-            /**
-             * 上滑加载更多
-             */
-            recyclerView.postDelayed({
-                Log.i("info", "load yes")
-                meets.add(Meet("现在，我们将会对张老三进行正义的审判！", Date()))
-                meets.add(Meet("现在，我们将会对张老三进行正义的审判！", Date()))
-                meets.add(Meet("现在，我们将会对张老三进行正义的审判！", Date()))
-                meets.add(Meet("现在，我们将会对张老三进行正义的审判！", Date()))
-                meets.add(Meet("现在，我们将会对张老三进行正义的审判！", Date()))
-                if (meets.size > 10) {
-                    sampleRecyclerAdapter.loadMoreEnd()
-                } else {
-                    sampleRecyclerAdapter.loadMoreComplete()
-//                    sampleRecyclerAdapter.loadMoreFail()
-                }
-            }, Constants.DELAY_TIME)
-        }, recyclerView)
-        sampleRecyclerAdapter.openLoadAnimation()
-//        // 当列表滑动到倒数第N个Item的时候(默认是1)回调onLoadMoreRequested方法
-//        sampleRecyclerAdapter.setPreLoadNumber(int);
-        // 没有数据的时候默认显示该布局
-        val view = this.layoutInflater.inflate(R.layout.activity_empty, null)
-        view.findViewById<TextView>(R.id.emptyTextHint).text = "没有找到案件"
-        sampleRecyclerAdapter.emptyView = view
-        recyclerView.adapter = sampleRecyclerAdapter
     }
 
     override fun onBackPressed() {
@@ -124,6 +72,61 @@ class MeetListActivity : AppCompatActivity() {
 
     fun back() {
         super.onBackPressed()
+    }
+
+    private fun initAdapter() {
+        // 获取RecyclerView对象
+        recyclerView = findViewById<View>(R.id.my_recycler_view) as RecyclerView
+
+        // 创建线性布局管理器（默认是垂直方向）
+        val layoutManager = GridLayoutManager(this, 2)
+        // 为RecyclerView指定布局管理对象
+        recyclerView.layoutManager = layoutManager
+        // 创建Adapter
+        val sampleRecyclerAdapter = MeetListAdapter(meets, this)
+//        sampleRecyclerAdapter.setEmptyView(getView());
+        sampleRecyclerAdapter.onItemClickListener = BaseQuickAdapter.OnItemClickListener { adapter, view, position ->
+            Log.d("", "onItemClick: ")
+            val meet = sampleRecyclerAdapter.getItem(position)
+            if (meet != null) {
+                meetGo(meet)
+            }
+            Toast.makeText(this, "onItemClick$position", Toast.LENGTH_SHORT).show()
+        }
+        sampleRecyclerAdapter.setOnItemChildClickListener { adapter, view, position ->
+            Log.d("", "onItemChildClick: ")
+            val meet = sampleRecyclerAdapter.getItem(position)
+            if (meet != null) {
+                meetGo(meet)
+            }
+        }
+        sampleRecyclerAdapter.setOnLoadMoreListener({
+            /**
+             * 上滑加载更多
+             */
+            recyclerView.postDelayed({
+                Log.i("info", "load yes")
+                meets.add(Meet("现在，我们将会对张老三进行正义的审判！"))
+                meets.add(Meet("现在，我们将会对张老三进行正义的审判！"))
+                meets.add(Meet("现在，我们将会对张老三进行正义的审判！"))
+                meets.add(Meet("现在，我们将会对张老三进行正义的审判！"))
+                meets.add(Meet("现在，我们将会对张老三进行正义的审判！"))
+                if (meets.size > 10) {
+                    sampleRecyclerAdapter.loadMoreEnd()
+                } else {
+                    sampleRecyclerAdapter.loadMoreComplete()
+//                    sampleRecyclerAdapter.loadMoreFail()
+                }
+            }, Constants.DELAY_TIME)
+        }, recyclerView)
+        sampleRecyclerAdapter.openLoadAnimation()
+//        // 当列表滑动到倒数第N个Item的时候(默认是1)回调onLoadMoreRequested方法
+//        sampleRecyclerAdapter.setPreLoadNumber(int);
+        // 没有数据的时候默认显示该布局
+        val view = this.layoutInflater.inflate(R.layout.activity_empty, null)
+        view.findViewById<TextView>(R.id.emptyTextHint).text = "没有找到案件"
+        sampleRecyclerAdapter.emptyView = view
+        recyclerView.adapter = sampleRecyclerAdapter
     }
 
     private fun meetGo(meet: Meet) {
@@ -160,10 +163,10 @@ class MeetListActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun initAdapter() {
-        meets.add(Meet("现在，我们将会对张老三进行正义的审判！", Date()))
-        meets.add(Meet("好的，高举人民的旗帜，为我国社会主义现代化贡献力量！", Date()))
-        meets.add(Meet("mac版本Termius图形化命令行工具的使用", Date()))
-        meets.add(Meet("2011年8月12日，历经三年的研发时间、三次平台切换，终于迎来了国产第一款侧滑Android手机，OPPOFindX903。", Date()))
+    private fun demoAdapter() {
+        meets.add(Meet("现在，我们将会对张老三进行正义的审判！"))
+        meets.add(Meet("好的，高举人民的旗帜，为我国社会主义现代化贡献力量！"))
+        meets.add(Meet("mac版本Termius图形化命令行工具的使用"))
+        meets.add(Meet("2011年8月12日，历经三年的研发时间、三次平台切换，终于迎来了国产第一款侧滑Android手机，OPPOFindX903。"))
     }
 }

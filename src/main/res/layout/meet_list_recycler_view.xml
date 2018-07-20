@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".activity.MeetListActivity"
-    tools:showIn="@layout/meet_list">
+    tools:showIn="@layout/activity_meet_list">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/my_recycler_view"
