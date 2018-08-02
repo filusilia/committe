@@ -2,9 +2,11 @@ package com.hxht.mobile.committee.activity
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.annotation.TargetApi
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
 import android.support.design.widget.NavigationView
@@ -16,6 +18,7 @@ import android.support.v7.widget.CardView
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
+import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -44,11 +47,17 @@ import com.yanzhenjie.kalle.Headers
 import com.yanzhenjie.kalle.Kalle
 import com.yanzhenjie.kalle.download.Callback
 import com.yanzhenjie.kalle.download.Download
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_now_meeting.*
 import kotlinx.android.synthetic.main.content_now_meeting.*
 import kotlinx.android.synthetic.main.now_meeting_app_bar.*
+import ua.naiksoftware.stomp.LifecycleEvent
+import ua.naiksoftware.stomp.Stomp
+import ua.naiksoftware.stomp.client.StompClient
 import java.util.*
 
+@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 /**
  * 当前会议 activity
  */
@@ -82,6 +91,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         initDemoFile()
         initAdapter()
         nowTitle.setOnClickListener { view ->
+            stompClient()
             initNormalPopupIfNeed()
             mNormalPopup?.setAnimStyle(QMUIPopup.ANIM_GROW_FROM_CENTER)
             mNormalPopup?.setPreferredDirection(QMUIPopup.DIRECTION_TOP)
@@ -251,6 +261,8 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
                 "jpg", "png", "gif" -> {
                     //点击查看大图
                     val imageDialog = MyImageDialog(this, stuff.fileAddress)
+                    val window = imageDialog.window
+                    window.setGravity(Gravity.TOP)
                     imageDialog.show()
                 }
                 else -> {
@@ -400,6 +412,55 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
                 })
     }
 
+    private lateinit var mStompClient: StompClient
+
+    private fun stompClient() {
+        mStompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, "ws://192.168.10.129:8080/stomp")
+        LogUtils.i("开始连接 ws://192.168.10.129:8080/stomp")
+        mStompClient.lifecycle()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()).subscribe { lifecycleEvent ->
+                    when (lifecycleEvent.type) {
+                        LifecycleEvent.Type.OPENED -> {
+                            LogUtils.i("OPENED")
+                        }
+                        LifecycleEvent.Type.CLOSED -> {
+                            LogUtils.i("CLOSED", lifecycleEvent.message)
+                        }
+                        LifecycleEvent.Type.ERROR -> {
+                            LogUtils.e("Stomp connection error", lifecycleEvent.exception)
+                            LogUtils.i("ERROR")
+                        }
+                        else -> {
+                            LogUtils.i("未知状态")
+                        }
+                    }
+
+                }
+        //
+        mStompClient.topic("/app/arthur/law/beats")
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { topicMessage ->
+                    LogUtils.i("Received " + topicMessage.payload)
+                }
+        mStompClient.connect()
+        sendEchoViaStomp()
+    }
+
+    private fun disconnectStomp() {
+        mStompClient.disconnect()
+    }
+
+    private fun sendEchoViaStomp() {
+        mStompClient.send("/app/arthur/law/beats", "Echo STOMP")
+                .subscribe({
+                    LogUtils.i("STOMP echo send successfully")
+                }, { throwable ->
+                    LogUtils.e("Error send STOMP echo,$throwable")
+                })
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         LogUtils.i("$requestCode,$resultCode,$data")
@@ -407,7 +468,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
             when (requestCode) {
                 Constants.VOTE_CODE -> {
                     val voteTitle = data.getStringExtra("voteTitle")
-                    var vote = data.getStringArrayListExtra("vote")
+                    val vote = data.getStringArrayListExtra("vote")
                     if (null == voteTitle || null == vote || vote.isEmpty()) {
                         LogUtils.i("投票信息不完整 跳过。")
                     }

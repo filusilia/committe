@@ -24,9 +24,12 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import com.blankj.utilcode.util.BarUtils
+import com.blankj.utilcode.util.CacheDiskUtils
 import com.blankj.utilcode.util.LogUtils
 import com.hxht.mobile.committee.R
-import com.hxht.mobile.committee.common.Constants
+import com.hxht.mobile.committee.common.Constants.JCM_TOKEN
+import com.hxht.mobile.committee.common.Constants.JCM_URL
+import com.hxht.mobile.committee.common.Constants.JCM_URL_HEADER
 import com.hxht.mobile.committee.entity.Meet
 import com.qmuiteam.qmui.widget.dialog.QMUITipDialog
 import com.yanzhenjie.kalle.Kalle
@@ -57,7 +60,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         // 设置状态栏底色颜色
 //        BarUtils.setNavBarColor(this, resources.getColor(R.color.colorPrimary, null))
         BarUtils.setStatusBarColor(this, resources.getColor(R.color.colorPrimary, null))
-        val sharedPreferences = getSharedPreferences(LOGIN_TOKEN, 0)
+        val sharedPreferences = getSharedPreferences(LOGIN_INFO, 0)
         // Simulate network access.
         // token verify before network
         val usernameStr = sharedPreferences.getString("username", null)
@@ -125,7 +128,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
      */
     private fun loginStart(username: String, psd: String) {
 
-        var tipDialog = QMUITipDialog.Builder(this)
+        val tipDialog = QMUITipDialog.Builder(this)
                 .setIconType(QMUITipDialog.Builder.ICON_TYPE_LOADING)
                 .setTipWord("正在登录")
                 .create()
@@ -136,29 +139,35 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         KalleConfig.newBuilder()
                 .connectFactory(OkHttpConnectFactory.newBuilder().build())
                 .build()
-
-        Kalle.post("http://www.example.com")
-                .setHeader("name", "kalle") // 设置请求头，会覆盖默认头和之前添加的头。
-                .param("name", "kalle") // 添加请求参数。
+        Kalle.post("${JCM_URL}api/token/")
+                .param("username", username) // 添加请求参数。
+                .param("password", psd) // 添加请求参数。
                 .perform(object : SimpleCallback<String>() {
                     override fun onResponse(response: SimpleResponse<String, String>?) {
-                        tipDialog.dismiss()
-                        val admin = "姜老板"
-                        tipDialog = QMUITipDialog.Builder(this@LoginActivity)
-                                .setIconType(QMUITipDialog.Builder.ICON_TYPE_SUCCESS)
-                                .setTipWord("欢迎您，$admin")
-                                .create()
-                        tipDialog.show()
-                        LogUtils.i(response)
-                        val intent = Intent(this@LoginActivity, NowMeetingActivity::class.java)
-                        intent.putExtra("meet", Meet("王老汉碰瓷案"))
-                        startActivity(intent)
-
-                        Timer().schedule(object : TimerTask() {
-                            override fun run() {
+                        //请求成功
+                        if (response?.code() == 200) {
+                            val resultStr = response.succeed()
+                            val result = JSONObject(resultStr)
+                            if (result["code"] != 0) {
                                 tipDialog.dismiss()
+                                diaMessage(result["msg"].toString())
+                            } else {
+                                //登录成功，写下用户名密码 下次直接登录
+                                val sharedPreferences = getSharedPreferences(LOGIN_INFO, 0)
+                                val editor = sharedPreferences.edit()
+                                editor.putString("username", username)
+                                editor.putString("password", psd)
+                                editor.apply()
+
+                                //保存token
+                                CacheDiskUtils.getInstance().put(JCM_TOKEN, result["data"].toString())
+                                tipDialog.dismiss()
+                                checkMeet(username)
                             }
-                        }, 2000)
+                        } else {
+                            diaMessage(response?.failed())
+                        }
+
                     }
 
                     override fun onException(e: Exception?) {
@@ -166,42 +175,44 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                         tipDialog.dismiss()
                     }
                 })
-        if (username == "username" && psd == "password") {
-//            Thread.sleep(2000)
-//            tipDialog.dismiss()
-            val sharedPreferences = getSharedPreferences(LOGIN_TOKEN, 0)
-            val editor = sharedPreferences.edit()
-            editor.putString("username", username)
-            editor.putString("password", psd)
-            editor.apply()
+    }
 
-//            val selfDialog = NormalDialog(this)
-//            selfDialog.setTitle("找到会议啦")
-//            selfDialog.setMessage("你现在是不是想要参加会议：王老汉碰瓷案?")
-//            selfDialog.setYesClickListener("是的", object : NormalDialog.YesClickListener {
-//                override fun onYesClick() {
-//                    Toast.makeText(this@LoginActivity, "点击了--确定--按钮", Toast.LENGTH_LONG).show()
-//                    selfDialog.dismiss()
-//                    val intent = Intent(this@LoginActivity, NowMeetingActivity::class.java)
-//                    intent.putExtra("meet", Meet("王老汉碰瓷案", Date()))
-//                    startActivityForResult(intent, 0)
-//                }
-//            })
-//            selfDialog.setNoClickListener("不是此会议", object : NormalDialog.NoClickListener {
-//                override fun onNoClick() {
-//                    Toast.makeText(this@LoginActivity, "点击了--取消--按钮", Toast.LENGTH_LONG).show()
-//                    selfDialog.dismiss()
-//                    val intent = Intent(this@LoginActivity, MeetListActivity::class.java)
-//                    startActivity(intent)
-//                }
-//            })
-//            selfDialog.show()
+    private fun checkMeet(username: String) {
+        KalleConfig.newBuilder()
+                .connectFactory(OkHttpConnectFactory.newBuilder().build())
+                .build()
+        Kalle.get("${JCM_URL}api/duty/")
+                .setHeader(JCM_URL_HEADER, CacheDiskUtils.getInstance().getString(JCM_TOKEN)) // 设置请求头，会覆盖默认头和之前添加的头。
+                .perform(object : SimpleCallback<String>() {
+                    override fun onResponse(dutyResponse: SimpleResponse<String, String>?) {
+                        if (dutyResponse?.code() == 200) {
+                            val dutyStr = dutyResponse.succeed()
+                            val duty = JSONObject(dutyStr)
+                            if (duty["code"] == 0) {
+                                val intent = Intent(this@LoginActivity, NowMeetingActivity::class.java)
+                                intent.putExtra("meet", Meet("王老汉碰瓷案"))
+                                startActivity(intent)
+                            }
+                        }
+                        val intent = Intent(this@LoginActivity, NowMeetingActivity::class.java)
+                        intent.putExtra("meet", Meet("王老汉碰瓷案"))
+                        startActivity(intent)
+                    }
+                })
+        diaMessage("欢迎您，$username")
+    }
 
-        } else {
-            showProgress(false)
-            password.error = getString(R.string.error_incorrect_password)
-            password.requestFocus()
-        }
+    private fun diaMessage(message: String?) {
+        val tipDialog = QMUITipDialog.Builder(this@LoginActivity)
+                .setIconType(QMUITipDialog.Builder.ICON_TYPE_SUCCESS)
+                .setTipWord(message)
+                .create()
+        tipDialog.show()
+        Timer().schedule(object : TimerTask() {
+            override fun run() {
+                tipDialog.dismiss()
+            }
+        }, 2000)
     }
 
     /**
@@ -361,7 +372,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             // TODO: attempt authentication against a network service.
             // http 请求登录在这里
             try {
-                val sharedPreferences = getSharedPreferences(LOGIN_TOKEN, 0)
+                val sharedPreferences = getSharedPreferences(LOGIN_INFO, 0)
                 // Simulate network access.
                 // token verify before network
                 val username = sharedPreferences.getString("username", null)
@@ -436,7 +447,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
          * Id to identity READ_CONTACTS permission request.
          */
         private const val REQUEST_READ_CONTACTS = 0
-        private const val LOGIN_TOKEN = "loginToken"
+        private const val LOGIN_INFO = "loginInfo"
 
         private var LOGIN_SUCCESS = 0
 

@@ -1,6 +1,10 @@
 package com.hxht.mobile.committee.common
 
 object Constants {
+
+    const val JCM_URL = "http://192.168.10.129:8080/"
+    const val JCM_URL_HEADER = "Authorization"
+    const val JCM_TOKEN = "jcmToken"
     /**
      * 下载路径
      */

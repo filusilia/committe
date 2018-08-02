@@ -69,7 +69,8 @@
             android:name=".activity.ChooseVoteActivity"
             android:label="@string/title_activity_choose_vote"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".activity.UserInfoActivity"></activity>
+        <activity android:name=".activity.UserInfoActivity" />
+        <activity android:name=".activity.MultipleVoteActivity"></activity>
     </application>
 
 </manifest>
