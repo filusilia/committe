@@ -5,10 +5,14 @@ import android.support.design.widget.NavigationView
 import android.support.v7.app.AppCompatActivity
 import android.view.MenuItem
 import com.blankj.utilcode.util.BarUtils
+import com.blankj.utilcode.util.CacheDiskUtils
 import com.blankj.utilcode.util.LogUtils
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.hxht.mobile.committee.R
+import com.hxht.mobile.committee.common.Constants
+import com.hxht.mobile.committee.utils.KalleConfigUtil
+import com.hxht.mobile.committee.utils.TokenInterceptor
 import com.qmuiteam.qmui.widget.dialog.QMUITipDialog
 import com.yanzhenjie.kalle.Kalle
 import com.yanzhenjie.kalle.KalleConfig
@@ -36,18 +40,11 @@ class UserInfoActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
         /**
          * 网络登录验证
          */
-        KalleConfig.newBuilder()
-                .connectFactory(OkHttpConnectFactory.newBuilder().build())
-                .build()
-
-        Kalle.post("http://www.example.com")
-                .setHeader("name", "kalle") // 设置请求头，会覆盖默认头和之前添加的头。
-                .param("name", "kalle") // 添加请求参数。
+        Kalle.get("${Constants.JCM_URL}api/currentUser")
                 .perform(object : SimpleCallback<String>() {
                     override fun onResponse(response: SimpleResponse<String, String>?) {
                         tipDialog.dismiss()
                         LogUtils.i(response)
-
                         Glide.with(this@UserInfoActivity)
                                 .load("http://104.224.152.210:8080/pic/61781299_p0.jpg").apply(RequestOptions().placeholder(R.drawable.user))
                                 .into(userHeadImg)

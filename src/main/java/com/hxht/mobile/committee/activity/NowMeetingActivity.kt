@@ -26,6 +26,7 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.TextView
 import android.widget.Toast
 import com.blankj.utilcode.util.BarUtils
+import com.blankj.utilcode.util.CacheDiskUtils
 import com.blankj.utilcode.util.LogUtils
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.daimajia.numberprogressbar.NumberProgressBar
@@ -33,6 +34,7 @@ import com.hxht.mobile.committee.R
 import com.hxht.mobile.committee.R.id.number_progress_bar
 import com.hxht.mobile.committee.adapter.NowMeetingStuffAdapter
 import com.hxht.mobile.committee.common.Constants
+import com.hxht.mobile.committee.common.Constants.JCM_URL
 import com.hxht.mobile.committee.dialog.MyImageDialog
 import com.hxht.mobile.committee.dialog.NormalDialog
 import com.hxht.mobile.committee.entity.Meet
@@ -182,6 +184,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
                         Toast.makeText(this@NowMeetingActivity, "点击了--确定--按钮", Toast.LENGTH_LONG).show()
                         selfDialog.dismiss()
                         val intent = Intent(this@NowMeetingActivity, MeetListActivity::class.java)
+                        intent.putExtra("meet", meet)
                         startActivityForResult(intent, Constants.NOW_MEETING_CODE)
                     }
                 })
@@ -351,9 +354,10 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
 //                return (1 - percent) * waveHeight
 //            }
 //        })
-        canceller = Kalle.Download.get(stuff.fileAddress).tag(cancelTag)
+        canceller = Kalle.Download.get("$JCM_URL/api/download/1").tag(cancelTag)
+                .setHeader(Constants.JCM_URL_HEADER, CacheDiskUtils.getInstance().getString(Constants.JCM_TOKEN)) // 设置请求头，会覆盖默认头和之前添加的头。
                 .directory(StorageUtil.getStorage()?.path + Constants.DOWNLOAD_PATH)
-                .fileName(stuff.fileName).onProgress { progress, byteCount, speed ->
+                .fileName("2c1f3a7470874e339ab2714995e652cc.gif").onProgress { progress, byteCount, speed ->
                     // progress：进度，[0, 100]。
                     // byteCount: 目前已经下载的byte大小。
                     // speed：此时每秒下载的byte大小。
@@ -438,7 +442,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
 
                 }
         //
-        mStompClient.topic("/app/arthur/law/beats")
+        mStompClient.topic("/topic/arthur/law/beats")
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe { topicMessage ->
@@ -453,7 +457,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
     }
 
     private fun sendEchoViaStomp() {
-        mStompClient.send("/app/arthur/law/beats", "Echo STOMP")
+        mStompClient.send("/app/arthur/law/beats", "{\"meeting\":3,\"token\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NCwidXNlcm5hbWUiOiJ0ZXN0MyIsInJlYWxOYW1lIjoidGVzdDMiLCJleHAiOjE1MzMyNjcwNTksIm5iZiI6MTUzMzE4MDY1OX0.Ory05VhaD6HPZbCOrQUb7MSa3N-wz8UbBricTMV7j-M\"}")
                 .subscribe({
                     LogUtils.i("STOMP echo send successfully")
                 }, { throwable ->

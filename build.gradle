@@ -42,6 +42,8 @@ dependencies {
     //anko
     implementation 'org.jetbrains.anko:anko:0.10.5'
     implementation "org.jetbrains.anko:anko-commons:0.10.5"
+    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
 
     implementation 'com.github.vondear.RxTool:RxKit:v2.1.6'
     implementation 'com.blankj:utilcode:1.17.3'

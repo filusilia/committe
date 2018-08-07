@@ -7,6 +7,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import com.hxht.mobile.committee.R
+import com.hxht.mobile.committee.common.Constants.JCM_URL
 import com.hxht.mobile.committee.entity.Meet
 import com.hxht.mobile.committee.entity.Stuff
 import java.util.*
@@ -29,10 +30,12 @@ open class MeetListAdapter : BaseQuickAdapter<Meet, BaseViewHolder> {
         val imageView = helper.getView(R.id.meetImg) as ImageView
         if (null != item.meetCover) {
             Glide.with(context)
-                    .load(item.meetCover).apply(RequestOptions().placeholder(R.drawable.jcm_mobile))
+                    .load(JCM_URL+item.meetCover).apply(RequestOptions().placeholder(R.drawable.jcm_mobile))
+//                    .error(R.drawable.jcm_mobile)//图片加载失败后，显示的图片
                     .into(imageView)
         }
         helper.setText(R.id.tvTitle, item.meetName)
+        helper.setText(R.id.tvDis, item.summary)
 //        helper.setImageResource(R.id.icon, item.meetTime)
 //        val cardView = helper.getView(R.id.meet_i)
 //        cardView.setCardBackgroundColor(Color.parseColor(item.getColorStr()))

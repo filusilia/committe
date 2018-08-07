@@ -17,8 +17,8 @@
 
         <com.qmuiteam.qmui.widget.QMUIRadiusImageView
             android:id="@+id/meetImg"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             android:layout_marginBottom="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
@@ -28,7 +28,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:qmui_is_oval="true"
+            app:qmui_border_width="1px"
+            app:qmui_corner_radius="15dp"
             app:qmui_selected_border_color="?attr/qmui_config_color_gray_4"
             app:qmui_selected_border_width="2dp"
             app:qmui_selected_mask_color="?attr/qmui_config_color_gray_8" />
@@ -36,17 +37,35 @@
         <TextView
             android:id="@+id/tvTitle"
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="32dp"
+            android:layout_gravity="bottom"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:textAlignment="textStart"
+            android:textColor="@color/dimgray"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/meetImg"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tvDis"
+            android:layout_width="0dp"
+            android:layout_height="32dp"
             android:layout_gravity="bottom"
             android:layout_marginBottom="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:gravity="center"
+            android:gravity="top"
+            android:textAlignment="textStart"
+            android:textColor="@color/darkgray"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/tvTitle"
             app:layout_constraintStart_toEndOf="@+id/meetImg"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
 
     </android.support.constraint.ConstraintLayout>
 

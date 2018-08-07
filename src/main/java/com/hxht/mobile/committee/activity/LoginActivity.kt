@@ -27,19 +27,25 @@ import com.blankj.utilcode.util.BarUtils
 import com.blankj.utilcode.util.CacheDiskUtils
 import com.blankj.utilcode.util.LogUtils
 import com.hxht.mobile.committee.R
+import com.hxht.mobile.committee.common.Constants
+import com.hxht.mobile.committee.common.Constants.CACHE_PASSWORD
+import com.hxht.mobile.committee.common.Constants.CACHE_USERNAME
 import com.hxht.mobile.committee.common.Constants.JCM_TOKEN
 import com.hxht.mobile.committee.common.Constants.JCM_URL
-import com.hxht.mobile.committee.common.Constants.JCM_URL_HEADER
 import com.hxht.mobile.committee.entity.Meet
+import com.hxht.mobile.committee.utils.OkHttpUtil
 import com.qmuiteam.qmui.widget.dialog.QMUITipDialog
 import com.yanzhenjie.kalle.Kalle
-import com.yanzhenjie.kalle.KalleConfig
-import com.yanzhenjie.kalle.OkHttpConnectFactory
 import com.yanzhenjie.kalle.simple.SimpleCallback
 import com.yanzhenjie.kalle.simple.SimpleResponse
 import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.android.synthetic.main.content_login.*
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.Request
+import okhttp3.Response
 import org.json.JSONObject
+import java.io.IOException
 import java.lang.Exception
 import java.util.*
 
@@ -52,6 +58,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private var mAuthTask: UserLoginTask? = null
+    private var checkMeetTask: CheckMeet? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -136,9 +143,6 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         /**
          * 网络登录验证
          */
-        KalleConfig.newBuilder()
-                .connectFactory(OkHttpConnectFactory.newBuilder().build())
-                .build()
         Kalle.post("${JCM_URL}api/token/")
                 .param("username", username) // 添加请求参数。
                 .param("password", psd) // 添加请求参数。
@@ -150,7 +154,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                             val result = JSONObject(resultStr)
                             if (result["code"] != 0) {
                                 tipDialog.dismiss()
-                                diaMessage(result["msg"].toString())
+                                diaMessageFail(result["msg"].toString())
                             } else {
                                 //登录成功，写下用户名密码 下次直接登录
                                 val sharedPreferences = getSharedPreferences(LOGIN_INFO, 0)
@@ -161,32 +165,48 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
 
                                 //保存token
                                 CacheDiskUtils.getInstance().put(JCM_TOKEN, result["data"].toString())
+                                CacheDiskUtils.getInstance().put(CACHE_USERNAME, username)
+                                CacheDiskUtils.getInstance().put(CACHE_PASSWORD, psd)
                                 tipDialog.dismiss()
-                                checkMeet(username)
+                                diaMessage("欢迎您，$username")
+                                checkMeetTask = CheckMeet()
+                                checkMeetTask?.execute()
                             }
                         } else {
-                            diaMessage(response?.failed())
+                            tipDialog.dismiss()
+                            diaMessageFail("登录失败")
                         }
 
                     }
 
                     override fun onException(e: Exception?) {
                         super.onException(e)
+                        LogUtils.e("登录异常${e?.message}")
                         tipDialog.dismiss()
+                        diaMessageFail("登录失败")
                     }
                 })
     }
 
-    private fun checkMeet(username: String) {
-        KalleConfig.newBuilder()
-                .connectFactory(OkHttpConnectFactory.newBuilder().build())
-                .build()
-        Kalle.get("${JCM_URL}api/duty/")
-                .setHeader(JCM_URL_HEADER, CacheDiskUtils.getInstance().getString(JCM_TOKEN)) // 设置请求头，会覆盖默认头和之前添加的头。
-                .perform(object : SimpleCallback<String>() {
-                    override fun onResponse(dutyResponse: SimpleResponse<String, String>?) {
-                        if (dutyResponse?.code() == 200) {
-                            val dutyStr = dutyResponse.succeed()
+    inner class CheckMeet internal constructor() : AsyncTask<Void, Void, Boolean>() {
+
+        override fun doInBackground(vararg params: Void): Boolean? {
+            // TODO: attempt authentication against a network service.
+            // http 请求登录在这里
+            return try {
+                val request = Request.Builder().url("$JCM_URL/api/duty/").addHeader(Constants.JCM_URL_HEADER, CacheDiskUtils.getInstance().getString(Constants.JCM_TOKEN))
+                        .build()
+                val call = OkHttpUtil.client.newCall(request)
+                call.enqueue(object : Callback {
+                    override fun onFailure(call: Call, e: IOException) {
+                        LogUtils.i("onFailure: ")
+                    }
+
+                    @Throws(IOException::class)
+                    override fun onResponse(call: Call, response: Response) {
+//                        LogUtils.i("onResponse: " + response.body()?.string()+"${response.code()}")
+                        if (response.code() == 200) {
+                            val dutyStr = response.body()?.string()
                             val duty = JSONObject(dutyStr)
                             if (duty["code"] == 0) {
                                 val intent = Intent(this@LoginActivity, NowMeetingActivity::class.java)
@@ -194,17 +214,43 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                                 startActivity(intent)
                             }
                         }
-                        val intent = Intent(this@LoginActivity, NowMeetingActivity::class.java)
-                        intent.putExtra("meet", Meet("王老汉碰瓷案"))
+                        val intent = Intent(this@LoginActivity, MeetListActivity::class.java)
                         startActivity(intent)
                     }
                 })
-        diaMessage("欢迎您，$username")
+                true
+            } catch (e: InterruptedException) {
+                false
+            }
+
+        }
+
+        override fun onPostExecute(success: Boolean?) {
+            Log.v("", "post execute")
+
+        }
+
+        override fun onCancelled() {
+
+        }
     }
 
     private fun diaMessage(message: String?) {
         val tipDialog = QMUITipDialog.Builder(this@LoginActivity)
                 .setIconType(QMUITipDialog.Builder.ICON_TYPE_SUCCESS)
+                .setTipWord(message)
+                .create()
+        tipDialog.show()
+        Timer().schedule(object : TimerTask() {
+            override fun run() {
+                tipDialog.dismiss()
+            }
+        }, 2000)
+    }
+
+    private fun diaMessageFail(message: String?) {
+        val tipDialog = QMUITipDialog.Builder(this@LoginActivity)
+                .setIconType(QMUITipDialog.Builder.ICON_TYPE_FAIL)
                 .setTipWord(message)
                 .create()
         tipDialog.show()
@@ -387,7 +433,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                 val editor = sharedPreferences.edit()
                 editor.putString("username", mUsername)
                 editor.putString("password", mPassword)
-                editor.commit()
+                editor.apply()
                 Thread.sleep(2000)
                 Log.v("", "do background")
                 return false

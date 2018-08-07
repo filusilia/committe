@@ -7,22 +7,23 @@ import kotlin.collections.ArrayList
 
 data class Meet(
         val id: Int,
-        val meetName: String,
-        val summary: String?,
-        val Logo: String?,
-        val time: Date?,
-        val status: Int?,
-        val reserveStart: String?,
-        val reserveEnd: String?,
-        val start: String?,
-        val end: String?,
-        val room: String?,
-        val files: ArrayList<String>?,
-        val creator: String?,
-        val createDate: String?,
-        val meetCover: String?) : MultiItemEntity, Serializable {
+        var meetName: String?,
+        var summary: String?,
+        var Logo: String?,
+        var time: Date?,
+        var status: Int?,
+        var reserveStart: String?,
+        var reserveEnd: String?,
+        var start: String?,
+        var end: String?,
+        var room: String?,
+        var files: ArrayList<String>?,
+        var creator: String?,
+        var createDate: String?,
+        var meetCover: String?) : MultiItemEntity, Serializable {
 
     constructor(meetName: String) : this(0, meetName, null, null, null, null, null, null, null, null, null, null, null, null, null)
+    constructor(id: Int) : this(id, null, null, null, null, null, null, null, null, null, null, null, null, null, null)
 
     private var itemType: Int = 0
 
