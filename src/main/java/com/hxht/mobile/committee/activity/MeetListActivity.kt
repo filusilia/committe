@@ -95,7 +95,6 @@ class MeetListActivity : AppCompatActivity() {
     private var page = 1
     private var pageSize = 10
 
-
     inner class MeetListTask internal constructor() : AsyncTask<Void, Void, Boolean>() {
 
         override fun doInBackground(vararg params: Void): Boolean? {

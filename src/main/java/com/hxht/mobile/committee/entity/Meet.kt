@@ -22,8 +22,12 @@ data class Meet(
         var createDate: String?,
         var meetCover: String?) : MultiItemEntity, Serializable {
 
-    constructor(meetName: String) : this(0, meetName, null, null, null, null, null, null, null, null, null, null, null, null, null)
-    constructor(id: Int) : this(id, null, null, null, null, null, null, null, null, null, null, null, null, null, null)
+    constructor(meetName: String) : this(0, meetName, null, null, null, null, null, null, null, null, null, null, null, null, null){
+        files = ArrayList()
+    }
+    constructor(id: Int) : this(id, null, null, null, null, null, null, null, null, null, null, null, null, null, null){
+        files = ArrayList()
+    }
 
     private var itemType: Int = 0
 

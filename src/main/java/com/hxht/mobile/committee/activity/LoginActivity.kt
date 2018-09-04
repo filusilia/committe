@@ -143,7 +143,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         /**
          * 网络登录验证
          */
-        Kalle.post("${JCM_URL}api/token/")
+        Kalle.post("${JCM_URL}api/token")
                 .param("username", username) // 添加请求参数。
                 .param("password", psd) // 添加请求参数。
                 .perform(object : SimpleCallback<String>() {
