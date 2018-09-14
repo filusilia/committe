@@ -29,10 +29,12 @@ import com.blankj.utilcode.util.LogUtils
 import com.hxht.mobile.committee.R
 import com.hxht.mobile.committee.common.Constants
 import com.hxht.mobile.committee.common.Constants.CACHE_PASSWORD
+import com.hxht.mobile.committee.common.Constants.CACHE_USERID
 import com.hxht.mobile.committee.common.Constants.CACHE_USERNAME
 import com.hxht.mobile.committee.common.Constants.JCM_TOKEN
 import com.hxht.mobile.committee.common.Constants.JCM_URL
 import com.hxht.mobile.committee.entity.Meet
+import com.hxht.mobile.committee.utils.DialogUtil
 import com.hxht.mobile.committee.utils.OkHttpUtil
 import com.qmuiteam.qmui.widget.dialog.QMUITipDialog
 import com.yanzhenjie.kalle.Kalle
@@ -183,7 +185,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                         super.onException(e)
                         LogUtils.e("登录异常${e?.message}")
                         tipDialog.dismiss()
-                        diaMessageFail("登录失败")
+                        diaMessageFail("登录失败，服务器异常")
                     }
                 })
     }
@@ -194,12 +196,13 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             // TODO: attempt authentication against a network service.
             // http 请求登录在这里
             return try {
-                val request = Request.Builder().url("$JCM_URL/api/duty/").addHeader(Constants.JCM_URL_HEADER, CacheDiskUtils.getInstance().getString(Constants.JCM_TOKEN))
+                val request = Request.Builder().url("${JCM_URL}api/duty/").addHeader(Constants.JCM_URL_HEADER, CacheDiskUtils.getInstance().getString(Constants.JCM_TOKEN))
                         .build()
                 val call = OkHttpUtil.client.newCall(request)
                 call.enqueue(object : Callback {
                     override fun onFailure(call: Call, e: IOException) {
                         LogUtils.i("onFailure: ")
+                        DialogUtil.show(this@LoginActivity, "获取会议服务器错误！", QMUITipDialog.Builder.ICON_TYPE_FAIL)
                     }
 
                     @Throws(IOException::class)
@@ -209,13 +212,23 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                             val dutyStr = response.body()?.string()
                             val duty = JSONObject(dutyStr)
                             if (duty["code"] == 0) {
+                                val meetStr = JSONObject(duty["data"].toString())
+                                val meet = Meet(meetStr.getInt("id"))
+                                meet.meetName = meetStr["name"].toString()
+                                meet.meetCover = meetStr["logo"].toString()
+                                meet.summary = meetStr["summary"].toString()
                                 val intent = Intent(this@LoginActivity, NowMeetingActivity::class.java)
-                                intent.putExtra("meet", Meet("王老汉碰瓷案"))
+                                intent.putExtra("meet", meet)
+                                startActivity(intent)
+                                true
+                            } else {
+                                val intent = Intent(this@LoginActivity, MeetListActivity::class.java)
                                 startActivity(intent)
                             }
+                        } else {
+                            val intent = Intent(this@LoginActivity, MeetListActivity::class.java)
+                            startActivity(intent)
                         }
-                        val intent = Intent(this@LoginActivity, MeetListActivity::class.java)
-                        startActivity(intent)
                     }
                 })
                 true

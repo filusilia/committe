@@ -29,21 +29,30 @@ import android.widget.Toast
 import com.blankj.utilcode.util.BarUtils
 import com.blankj.utilcode.util.CacheDiskUtils
 import com.blankj.utilcode.util.LogUtils
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.daimajia.numberprogressbar.NumberProgressBar
 import com.hxht.mobile.committee.R
 import com.hxht.mobile.committee.R.id.number_progress_bar
 import com.hxht.mobile.committee.adapter.NowMeetingStuffAdapter
 import com.hxht.mobile.committee.common.Constants
+import com.hxht.mobile.committee.common.Constants.JCM_IP
 import com.hxht.mobile.committee.common.Constants.JCM_URL
 import com.hxht.mobile.committee.dialog.MyImageDialog
 import com.hxht.mobile.committee.dialog.NormalDialog
 import com.hxht.mobile.committee.entity.Meet
 import com.hxht.mobile.committee.entity.Stuff
+import com.hxht.mobile.committee.entity.User
+import com.hxht.mobile.committee.entity.Vote
+import com.hxht.mobile.committee.utils.DialogUtil
 import com.hxht.mobile.committee.utils.MimeUtil
 import com.hxht.mobile.committee.utils.OkHttpUtil
 import com.hxht.mobile.committee.utils.StorageUtil
+import com.hxht.mobile.committee.websocket.MyStomp
 import com.qmuiteam.qmui.util.QMUIDisplayHelper
+import com.qmuiteam.qmui.widget.QMUIRadiusImageView
+import com.qmuiteam.qmui.widget.dialog.QMUITipDialog
 import com.qmuiteam.qmui.widget.popup.QMUIPopup
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.yanzhenjie.kalle.Canceller
@@ -57,6 +66,7 @@ import kotlinx.android.synthetic.main.activity_now_meeting.*
 import kotlinx.android.synthetic.main.content_now_meeting.*
 import kotlinx.android.synthetic.main.now_meeting_app_bar.*
 import okhttp3.Request
+import org.json.JSONArray
 import org.json.JSONObject
 import ua.naiksoftware.stomp.LifecycleEvent
 import ua.naiksoftware.stomp.Stomp
@@ -75,7 +85,8 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
     private val PERMISSIONS_STORAGE = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
     private val REQUEST_EXTERNAL_STORAGE = 1
     private var rxPermissions: RxPermissions? = null
-    private var nowMeetingTask:NowMeetingTask? = null
+    private var nowMeetingTask: NowMeetingTask? = null
+    private var drawUserTask: DrawUserTask? = null
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,17 +101,22 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         rxPermissions = RxPermissions(this)
         grantPermissions()
         nav_view.setNavigationItemSelectedListener(this)
+        //加载导航个人信息
+        drawUserTask = DrawUserTask()
+        drawUserTask?.execute()
 
+        //加载会议资料
         meet = intent.getSerializableExtra("meet") as Meet
         if (null != meet) {
+            LogUtils.i("当前会议室这个！：$meet")
             nowTitle.text = "当前会议： ${meet?.meetName}"
-            nowMeetingTask= NowMeetingTask(meet?.id)
+            nowMeetingTask = NowMeetingTask(meet?.id)
             nowMeetingTask?.execute()
         }
 
 //        initDemoFile()
         nowTitle.setOnClickListener { view ->
-            stompClient()
+            //            stompClient()
             initNormalPopupIfNeed()
             mNormalPopup?.setAnimStyle(QMUIPopup.ANIM_GROW_FROM_CENTER)
             mNormalPopup?.setPreferredDirection(QMUIPopup.DIRECTION_TOP)
@@ -128,10 +144,10 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
             val view: View? = View.inflate(this, R.layout.now_meeting_pop, null)
             val con: ConstraintLayout = view!!.findViewById(R.id.popMeet)
             val popMeetTitle = con.findViewById<TextView>(R.id.popMeetTitle)
-            popMeetTitle.text = meet?.summary
+            popMeetTitle.text = "会议详情：${meet?.summary}"
             popMeetTitle.setTextColor(ContextCompat.getColor(this, R.color.gray))
             val popMeetParticipants = con.findViewById<TextView>(R.id.popMeetParticipants)
-            popMeetParticipants.text = "与会人员：佘太君、翠花、特朗普"
+//            popMeetParticipants.text = "与会人员：佘太君、翠花、特朗普"
             popMeetParticipants.setTextColor(ContextCompat.getColor(this, R.color.gray))
             con.layoutParams = mNormalPopup?.generateLayoutParam(
                     QMUIDisplayHelper.dp2px(this, 250), WRAP_CONTENT)
@@ -143,13 +159,12 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
     }
 
 
-    inner class NowMeetingTask internal constructor(val id:Int?) : AsyncTask<Void, Void, Boolean>() {
+    inner class NowMeetingTask internal constructor(val id: Int?) : AsyncTask<Void, Void, Boolean>() {
 
         override fun doInBackground(vararg params: Void): Boolean? {
             // TODO: attempt authentication against a network service.
-            // http 请求登录在这里
             return try {
-                if (id==null) return false
+                if (id == null) return false
                 val request = Request.Builder().url("${Constants.JCM_URL}api/meeting/$id")
                         .addHeader(Constants.JCM_URL_HEADER, CacheDiskUtils.getInstance().getString(Constants.JCM_TOKEN))
                         .build()
@@ -160,10 +175,20 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
                     val result = JSONObject(resultStr)
                     if (result["code"] == 0) {
                         val meetStr = JSONObject(result["data"].toString())
-                            meet?.meetName = meetStr["name"].toString()
-                            meet?.meetCover = meetStr["logo"].toString()
-                            meet?.summary = meetStr["summary"].toString()
-
+                        meet?.meetName = meetStr["name"].toString()
+                        meet?.meetCover = meetStr["logo"].toString()
+                        meet?.summary = meetStr["summary"].toString()
+                        val fileJSONArray = meetStr["files"]
+                        if (fileJSONArray != null && (fileJSONArray as JSONArray).length() > 0) {
+                            for (i in 0..(fileJSONArray.length() - 1)) {
+                                val json = JSONObject(fileJSONArray.get(i).toString())
+                                val temp = Stuff()
+                                temp.fileName = json["name"].toString()
+                                temp.fileType = json["type"].toString()
+                                temp.fileAddress = JCM_URL + json["url"].toString()
+                                files.add(temp)
+                            }
+                        }
                         true
                     }
                 }
@@ -223,7 +248,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
                 }
                 "jpg", "png", "gif" -> {
                     //点击查看大图
-                    val imageDialog = MyImageDialog(this, stuff.fileAddress)
+                    val imageDialog = MyImageDialog(this, stuff.fileAddress!!)
                     val window = imageDialog.window
                     window.setGravity(Gravity.TOP)
                     imageDialog.show()
@@ -242,20 +267,16 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
              * 上滑加载更多
              */
             recyclerView.postDelayed({
-                files.add(Stuff(Random().nextLong(), "test_video.jpg", "jpg", "http://104.224.152.210:8080/pic/test_video.jpg"))
-                files.add(Stuff(Random().nextLong(), "test_video.jpg", "jpg", "http://104.224.152.210:8080/pic/test_video.jpg"))
-                files.add(Stuff(Random().nextLong(), "test_video.jpg", "jpg", "http://104.224.152.210:8080/pic/test_video.jpg"))
-                files.add(Stuff(Random().nextLong(), "test_video.jpg", "jpg", "http://104.224.152.210:8080/pic/test_video.jpg"))
-                files.add(Stuff(Random().nextLong(), "test_video.jpg", "jpg", "http://104.224.152.210:8080/pic/test_video.jpg"))
-                if (true) {
-                    if (files.size > 30) {
-                        sampleRecyclerAdapter.loadMoreEnd()
-                    } else {
-                        sampleRecyclerAdapter.loadMoreComplete()
-                    }
-                } else {
-                    sampleRecyclerAdapter.loadMoreFail()
-                }
+                sampleRecyclerAdapter.loadMoreEnd()
+//                if (true) {
+//                    if (files.size > 30) {
+//                        sampleRecyclerAdapter.loadMoreEnd()
+//                    } else {
+//                        sampleRecyclerAdapter.loadMoreComplete()
+//                    }
+//                } else {
+//                    sampleRecyclerAdapter.loadMoreFail()
+//                }
             }, Constants.DELAY_TIME)
         }, recyclerView)
 //        sampleRecyclerAdapter.openLoadMore(PAGE_SIZE, true);
@@ -314,10 +335,10 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
 //                return (1 - percent) * waveHeight
 //            }
 //        })
-        canceller = Kalle.Download.get("$JCM_URL/api/download/1").tag(cancelTag)
+        canceller = Kalle.Download.get(stuff.fileAddress).tag(cancelTag)
                 .setHeader(Constants.JCM_URL_HEADER, CacheDiskUtils.getInstance().getString(Constants.JCM_TOKEN)) // 设置请求头，会覆盖默认头和之前添加的头。
                 .directory(StorageUtil.getStorage()?.path + Constants.DOWNLOAD_PATH)
-                .fileName("2c1f3a7470874e339ab2714995e652cc.gif").onProgress { progress, byteCount, speed ->
+                .fileName(stuff.fileName).onProgress { progress, byteCount, speed ->
                     // progress：进度，[0, 100]。
                     // byteCount: 目前已经下载的byte大小。
                     // speed：此时每秒下载的byte大小。
@@ -376,53 +397,59 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
                 })
     }
 
-    private lateinit var mStompClient: StompClient
-
-    private fun stompClient() {
-        mStompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, "ws://192.168.10.129:8080/stomp")
-        LogUtils.i("开始连接 ws://192.168.10.129:8080/stomp")
-        mStompClient.lifecycle()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()).subscribe { lifecycleEvent ->
-                    when (lifecycleEvent.type) {
-                        LifecycleEvent.Type.OPENED -> {
-                            LogUtils.i("OPENED")
-                        }
-                        LifecycleEvent.Type.CLOSED -> {
-                            LogUtils.i("CLOSED", lifecycleEvent.message)
-                        }
-                        LifecycleEvent.Type.ERROR -> {
-                            LogUtils.e("Stomp connection error", lifecycleEvent.exception)
-                            LogUtils.i("ERROR")
-                        }
-                        else -> {
-                            LogUtils.i("未知状态")
-                        }
-                    }
-
+    private fun handleTopicMessage(str: String?) {
+        if (str == null) return
+        val json = JSONObject(str)
+        LogUtils.i(json)
+        when (json["code"]) {
+            2001 -> {
+                val data = json.getJSONObject("data")
+                if (deal(data)) {
+                    val nowVote = data.getJSONObject("vote")
+                    val entity = Vote(nowVote.getBoolean("multiple"))
+                    entity.title = nowVote.getString("name")
+                    entity.summary = nowVote.getString("summary")
+                    entity.item = nowVote.getString("item")
+                    startVote(entity)
                 }
-        //
-        mStompClient.topic("/topic/arthur/law/beats")
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { topicMessage ->
-                    LogUtils.i("Received " + topicMessage.payload)
-                }
-        mStompClient.connect()
-        sendEchoViaStomp()
+            }
+        }
     }
 
-    private fun disconnectStomp() {
-        mStompClient.disconnect()
+    private fun startVote(vote: Vote) {
+//        val vote = arrayListOf("还行，就判他五年 ","不行，这么认真的队伍要无罪释放 "," 爱咋咋地我弃权")
+        val builder = AlertDialog.Builder(this@NowMeetingActivity)
+        builder.setCancelable(false)
+        builder.setTitle("发现投票项")
+        builder.setMessage("有人发起了投票\n将会带你跳转到新页面进行投票。")
+        builder.setPositiveButton("好的") { _: DialogInterface, _: Int ->
+            if (vote.multiple) {
+                val temp = Intent(this@NowMeetingActivity, MultipleVoteActivity::class.java)
+                temp.putExtra("vote", vote)
+                temp.putExtra("meet", meet)
+                startActivityForResult(temp, Constants.NOW_MEETING_CODE)
+            } else {
+                val temp = Intent(this@NowMeetingActivity, SingleVoteActivity::class.java)
+                temp.putExtra("vote", vote)
+                temp.putExtra("meet", meet)
+                startActivityForResult(temp, Constants.NOW_MEETING_CODE)
+            }
+        }
+        builder.show()
     }
 
-    private fun sendEchoViaStomp() {
-        mStompClient.send("/app/arthur/law/beats", "{\"meeting\":3,\"token\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NCwidXNlcm5hbWUiOiJ0ZXN0MyIsInJlYWxOYW1lIjoidGVzdDMiLCJleHAiOjE1MzMyNjcwNTksIm5iZiI6MTUzMzE4MDY1OX0.Ory05VhaD6HPZbCOrQUb7MSa3N-wz8UbBricTMV7j-M\"}")
-                .subscribe({
-                    LogUtils.i("STOMP echo send successfully")
-                }, { throwable ->
-                    LogUtils.e("Error send STOMP echo,$throwable")
-                })
+    private fun deal(json: JSONObject?): Boolean {
+        if (json == null) return false
+        val nowMeet = json.getJSONObject("meeting")
+        if (nowMeet["id"] != meet?.id) return false
+        val nowVote = json.getJSONObject("vote")
+        val participants = nowVote.getJSONArray("participants")
+        for (i in 0..(participants.length() - 1)) {
+            val id = participants.getLong(i)
+            if (user?.id == id)
+                return true
+        }
+        return false
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -432,11 +459,11 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
             when (requestCode) {
                 Constants.VOTE_CODE -> {
                     val voteTitle = data.getStringExtra("voteTitle")
-                    val vote = data.getStringArrayListExtra("vote")
-                    if (null == voteTitle || null == vote || vote.isEmpty()) {
+                    val vote = data.getSerializableExtra("vote") as Vote
+                    if (null == voteTitle || null == vote) {
                         LogUtils.i("投票信息不完整 跳过。")
                     }
-                    initDemoVote(voteTitle, vote)
+                    startVote(vote)
                 }
                 else -> {
 
@@ -450,10 +477,12 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
     override fun onDestroy() {
         super.onDestroy()
         Kalle.Download.cancel(cancelTag)
+//        disconnectStomp()
     }
 
     private var firstTime = 0L
     override fun onBackPressed() {
+//        disconnectStomp()
         if (drawer_layout.isDrawerOpen(GravityCompat.START)) {
             drawer_layout.closeDrawer(GravityCompat.START)
         } else {
@@ -512,8 +541,9 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
                 val selfDialog = NormalDialog(this)
                 selfDialog.setTitle("切换会议")
                 selfDialog.setMessage("确定想要更换当前正在进行的会议吗？\n点击‘确定’将会带您跳转到会议列表")
-                selfDialog.setYesClickListener("是的", object : NormalDialog.YesClickListener {
+                selfDialog.setYesClickListener(getString(R.string.yes), object : NormalDialog.YesClickListener {
                     override fun onYesClick() {
+//                        disconnectStomp()
                         Toast.makeText(this@NowMeetingActivity, "点击了--确定--按钮", Toast.LENGTH_LONG).show()
                         selfDialog.dismiss()
                         val intent = Intent(this@NowMeetingActivity, MeetListActivity::class.java)
@@ -521,7 +551,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
                         startActivityForResult(intent, Constants.NOW_MEETING_CODE)
                     }
                 })
-                selfDialog.setNoClickListener("取消", object : NormalDialog.NoClickListener {
+                selfDialog.setNoClickListener(getString(R.string.no), object : NormalDialog.NoClickListener {
                     override fun onNoClick() {
                         Toast.makeText(this@NowMeetingActivity, "点击了--取消--按钮", Toast.LENGTH_LONG).show()
                         selfDialog.dismiss()
@@ -534,6 +564,95 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
 
         drawer_layout.closeDrawer(GravityCompat.START)
         return true
+    }
+
+    private var user: User? = null
+
+    /**
+     * 导航栏个人信息
+     */
+    inner class DrawUserTask internal constructor() : AsyncTask<Void, Void, Boolean>() {
+
+        override fun doInBackground(vararg params: Void): Boolean? {
+            // TODO: attempt authentication against a network service.
+            return try {
+                val request = Request.Builder().url("${Constants.JCM_URL}api/currentUser")
+                        .addHeader(Constants.JCM_URL_HEADER, CacheDiskUtils.getInstance().getString(Constants.JCM_TOKEN))
+                        .build()
+                val call = OkHttpUtil.client.newCall(request)
+                val response = call.execute()
+                if (response.code() == 200) {
+                    val resultStr = response.body()?.string()
+                    val result = JSONObject(resultStr)
+                    LogUtils.i("result:$result")
+                    if (result["code"] == 0) {
+                        user = User()
+                        val userJson = JSONObject(result["data"].toString())
+                        user?.id = userJson.getLong("id")
+                        user?.username = userJson["username"].toString()
+                        user?.realName = userJson["realName"].toString()
+                        user?.photo = userJson["photo"].toString()
+                        CacheDiskUtils.getInstance().put(Constants.CACHE_USERID, user?.id)
+                        MyStomp.connectStomp(meet?.id.toString())
+                        if (MyStomp.getStomp() != null) {
+                            MyStomp.getStomp()!!.topic("/topic/arthur/law/data")
+                                    .subscribeOn(Schedulers.io())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe { topicMessage ->
+                                        LogUtils.i("object class receive:${topicMessage.payload}")
+                                        val receive = "{\"code\":2001,\"msg\":\"发起投票\",\"data\":{\"meeting\":{\"id\":5,\"name\":\"瓦窑堡会议\"},\"vote\":{\"name\":\"固态是否老电脑提升体验的关键\",\"summary\":\"如题\",\"creator\":{\"id\":1,\"realName\":\"super\"},\"multiple\":false,\"participants\":[1,2,3,4,5],\"dateCreated\":\"2018-09-11 15:59:23\",\"item\":[{\"id\":32,\"name\":\"是是是，赶紧买\"},{\"id\":33,\"name\":\"关我吊事\"}]}}}"
+                                        handleTopicMessage(receive)
+                                    }
+                        }
+
+                        true
+                    }
+                }
+                false
+            } catch (e: InterruptedException) {
+                false
+            }
+        }
+
+        override fun onPostExecute(success: Boolean?) {
+            Log.v("", "post execute")
+            initDrawUser()
+        }
+
+        override fun onCancelled() {
+
+        }
+    }
+
+    var navUsername: TextView? = null
+    var navUserHead: QMUIRadiusImageView? = null
+    private fun initDrawUser() {
+        if (user == null) {
+            DialogUtil.show(this@NowMeetingActivity, "用户获取失败！", QMUITipDialog.Builder.ICON_TYPE_FAIL)
+//            val tipDialog = QMUITipDialog.Builder(this@NowMeetingActivity)
+//                    .setIconType(QMUITipDialog.Builder.ICON_TYPE_FAIL)
+//                    .setTipWord("用户获取失败！")
+//                    .create()
+//            tipDialog.show()
+//            Timer().schedule(object : TimerTask() {
+//                override fun run() {
+//                    tipDialog.dismiss()
+//                }
+//            }, 2000)
+            return
+        }
+        navUsername = findViewById(R.id.navUsername)
+        navUserHead = findViewById(R.id.navUserHead)
+
+        if (navUsername != null) {
+            navUsername?.text = user?.realName
+        }
+        if (navUserHead != null) {
+            Glide.with(this)
+                    .load(JCM_URL + user?.photo).apply(RequestOptions().placeholder(R.drawable.user))
+                    .into(navUserHead!!)
+        }
+
     }
 
     private fun initDemoFile() {
@@ -551,22 +670,5 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         files.add(Stuff(7, "flvplayer.swf", "swf", "http://104.224.152.210:8080/pic/flvplayer.swf"))
         files.add(Stuff(8, "61781299_p0.jpg", "jpg", "http://104.224.152.210:8080/pic/61781299_p0.jpg"))
         files.add(Stuff(9, "test_video.jpg", "jpg", "http://104.224.152.210:8080/pic/test_video.jpg"))
-    }
-
-    private fun initDemoVote(voteTitle: String, vote: ArrayList<String>) {
-//        val vote = arrayListOf("还行，就判他五年 ","不行，这么认真的队伍要无罪释放 "," 爱咋咋地我弃权")
-        val builder = AlertDialog.Builder(this@NowMeetingActivity)
-        builder.setCancelable(false)
-        builder.setTitle("发现投票项")
-        builder.setMessage("有人发起了投票\n将会带你跳转到新页面进行投票。")
-        builder.setPositiveButton("好的") { _: DialogInterface, _: Int ->
-            Log.i("info", "okle ")
-            val temp = Intent(this@NowMeetingActivity, ChooseVoteActivity::class.java)
-            temp.putExtra("voteTitle", voteTitle)
-            temp.putExtra("vote", vote)
-            temp.putExtra("meet", meet)
-            startActivityForResult(temp, Constants.NOW_MEETING_CODE)
-        }
-        builder.show()
     }
 }

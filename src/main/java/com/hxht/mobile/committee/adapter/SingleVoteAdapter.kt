@@ -3,9 +3,10 @@ package com.hxht.mobile.committee.adapter
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import com.hxht.mobile.committee.R
+import org.json.JSONObject
 import java.util.ArrayList
 
-class ChooseVoteAdapter : BaseQuickAdapter<String, BaseViewHolder> {
+class SingleVoteAdapter : BaseQuickAdapter<String, BaseViewHolder> {
     private var list: ArrayList<String>? = ArrayList()
 
     constructor() : super(R.layout.choose_vote_card, ArrayList<String>())
@@ -15,7 +16,8 @@ class ChooseVoteAdapter : BaseQuickAdapter<String, BaseViewHolder> {
     }
 
     override fun convert(helper: BaseViewHolder, item: String) {
-        helper.setText(R.id.voteCardText, item)
+        val json = JSONObject(item)
+        helper.setText(R.id.voteCardText, json.getString("name"))
         helper.addOnClickListener(R.id.voteCardText)
     }
 

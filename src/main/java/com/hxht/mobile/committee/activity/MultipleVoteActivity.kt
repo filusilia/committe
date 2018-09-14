@@ -13,7 +13,7 @@ import android.widget.Toast
 import com.blankj.utilcode.util.BarUtils
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.hxht.mobile.committee.R
-import com.hxht.mobile.committee.adapter.ChooseVoteAdapter
+import com.hxht.mobile.committee.adapter.SingleVoteAdapter
 import com.hxht.mobile.committee.common.Constants
 import com.hxht.mobile.committee.dialog.NormalDialog
 import com.hxht.mobile.committee.entity.Meet
@@ -64,7 +64,7 @@ class MultipleVoteActivity : AppCompatActivity() {
         val layoutManager = GridLayoutManager(this, 1)
         // 为RecyclerView指定布局管理对象
         chooseVoteChild.layoutManager = layoutManager
-        val sampleRecyclerAdapter = ChooseVoteAdapter(vote)
+        val sampleRecyclerAdapter = SingleVoteAdapter(vote)
         sampleRecyclerAdapter.onItemClickListener = BaseQuickAdapter.OnItemClickListener { adapter, view, position ->
             val voteStr = sampleRecyclerAdapter.getItem(position)
             okVote(voteStr)

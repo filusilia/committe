@@ -2,10 +2,12 @@ package com.hxht.mobile.committee.common
 
 object Constants {
 
-//    const val JCM_URL = "http://192.168.10.129:8080/"
-    const val JCM_URL = "http://192.168.10.14:8180/jcm/"
+//    const val JCM_IP = "192.168.10.129:8080"
+    const val JCM_IP = "192.168.10.14:8180/jcm/"
+    const val JCM_URL = "http://$JCM_IP/"
     const val JCM_URL_HEADER = "Authorization"
     const val JCM_TOKEN = "jcmToken"
+    const val CACHE_USERID = "cache_userId"
     const val CACHE_USERNAME = "cache_username"
     const val CACHE_PASSWORD = "cache_password"
 

@@ -2,6 +2,7 @@ package com.hxht.mobile.committee
 
 import android.support.test.InstrumentationRegistry
 import android.support.test.runner.AndroidJUnit4
+import org.json.JSONArray
 
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -20,5 +21,8 @@ class ExampleInstrumentedTest {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getTargetContext()
         assertEquals("com.hxht.mobile.committe", appContext.packageName)
+        val s = "[{\"id\":32,\"name\":\"是是是，赶紧买\"},{\"id\":33,\"name\":\"关我吊事\"}]"
+        val arr = JSONArray(s)
+        print(arr)
     }
 }

@@ -37,16 +37,20 @@ class NowMeetingStuffAdapter : BaseQuickAdapter<Stuff, BaseViewHolder> {
             "gif" -> {
                 imageView.setImageResource(R.drawable.ic_stuff_type_gif)
             }
+            else -> {
+                imageView.setImageResource(R.drawable.ic_stuff_type_file)
+            }
         }
     }
 
-    private fun loadImage(address: String, view: ImageView) {
+    private fun loadImage(address: String?, view: ImageView) {
+        if (address == null) return
         Glide.with(context)
                 .load(address).apply(RequestOptions().placeholder(R.drawable.ic_stuff_type_loading_pic))
                 .into(view)
     }
 
-    private var meetStuff:ArrayList<Stuff>? = ArrayList()
+    private var meetStuff: ArrayList<Stuff>? = ArrayList()
 
     constructor(list: ArrayList<Stuff>?, context: Context) : super(R.layout.now_meeting_staff_card, list) {
         meetStuff = list
