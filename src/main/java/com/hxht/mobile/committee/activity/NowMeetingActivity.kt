@@ -582,7 +582,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         override fun doInBackground(vararg params: Void): Boolean? {
             // TODO: attempt authentication against a network service.
             return try {
-                val request = Request.Builder().url("http:dfdf/fdapi/currentUser")
+                val request = Request.Builder().url("${Constants.JCM_URL}currentUser")
                         .addHeader(Constants.JCM_URL_HEADER, CacheDiskUtils.getInstance().getString(Constants.JCM_TOKEN))
                         .build()
                 val call = OkHttpUtil.client.newCall(request)
