@@ -29,6 +29,7 @@ import kotlinx.android.synthetic.main.content_user_info.*
 import kotlinx.android.synthetic.main.nav_header_main.*
 import okhttp3.Request
 import org.json.JSONObject
+import java.io.IOException
 import java.lang.Exception
 
 class UserInfoActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -84,25 +85,32 @@ class UserInfoActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
                         .addHeader(Constants.JCM_URL_HEADER, CacheDiskUtils.getInstance().getString(Constants.JCM_TOKEN))
                         .build()
                 val call = OkHttpUtil.client.newCall(request)
-                val response = call.execute()
-                tipDialog?.dismiss()
-                if (response.code() == 200) {
-                    val resultStr = response.body()?.string()
-                    val result = JSONObject(resultStr)
-                    if (result["code"] == 0) {
-                        val userJson = JSONObject(result["data"].toString())
-                        user.username = userJson["username"].toString()
-                        user.realName = userJson["realName"].toString()
-                        user.photo = userJson["photo"].toString()
+                call.execute().use { response ->
+                    tipDialog?.dismiss()
+                    if (response.code() == 200) {
+                        val resultStr = response.body()?.string()
+                        val result = JSONObject(resultStr)
+                        if (result["code"] == 0) {
+                            val userJson = JSONObject(result["data"].toString())
+                            user.username = userJson["username"].toString()
+                            user.realName = userJson["realName"].toString()
+                            user.photo = userJson["photo"].toString()
+                        } else {
+
+                        }
+                    } else {
+                        tipDialog = QMUITipDialog.Builder(this@UserInfoActivity)
+                                .setIconType(QMUITipDialog.Builder.ICON_TYPE_FAIL)
+                                .setTipWord("个人信息获取失败！")
+                                .create()
+                        tipDialog?.show()
                     }
-                } else {
-                    tipDialog = QMUITipDialog.Builder(this@UserInfoActivity)
-                            .setIconType(QMUITipDialog.Builder.ICON_TYPE_FAIL)
-                            .setTipWord("个人信息获取失败！")
-                            .create()
-                    tipDialog?.show()
                 }
+
                 false
+            } catch (e: IOException) {
+                tipDialog?.dismiss()
+                return false
             } catch (e: InterruptedException) {
                 false
             }

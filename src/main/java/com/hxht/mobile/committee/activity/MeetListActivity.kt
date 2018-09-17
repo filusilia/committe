@@ -56,6 +56,7 @@ class MeetListActivity : AppCompatActivity() {
         adapterTask = MeetListTask()
         adapterTask?.execute()
     }
+
     private var firstTime = 0L
     override fun onBackPressed() {
         if (nowMeeting == true) {
@@ -105,23 +106,29 @@ class MeetListActivity : AppCompatActivity() {
                         .addHeader(Constants.JCM_URL_HEADER, CacheDiskUtils.getInstance().getString(Constants.JCM_TOKEN))
                         .build()
                 val call = OkHttpUtil.client.newCall(request)
-                val response = call.execute()
-                if (response.code() == 200) {
-                    val resultStr = response.body()?.string()
-                    val result = JSONObject(resultStr)
-                    if (result["code"] == 0) {
-                        val meetStr = JSONArray(result["data"].toString())
-                        for (i in 0 until meetStr.length()) {
-                            val temp = meetStr.getJSONObject(i)
-                            val meetTemp = Meet(temp["id"].toString().toInt())
-                            meetTemp.meetName = temp["name"].toString()
-                            meetTemp.meetCover = temp["logo"].toString()
-                            meetTemp.summary = temp["summary"].toString()
+                try {
+                    call.execute().use { response->
+                        if (response.code() == 200) {
+                            val resultStr = response.body()?.string()
+                            val result = JSONObject(resultStr)
+                            if (result["code"] == 0) {
+                                val meetStr = JSONArray(result["data"].toString())
+                                for (i in 0 until meetStr.length()) {
+                                    val temp = meetStr.getJSONObject(i)
+                                    val meetTemp = Meet(temp["id"].toString().toInt())
+                                    meetTemp.meetName = temp["name"].toString()
+                                    meetTemp.meetCover = temp["logo"].toString()
+                                    meetTemp.summary = temp["summary"].toString()
 //                                            meetTemp.summary =temp["summary"].toString()
-                            meets.add(meetTemp)
+                                    meets.add(meetTemp)
+                                }
+                                true
+                            }
                         }
-                        true
+
                     }
+                } catch (e: IOException) {
+                    return false
                 }
                 false
             } catch (e: InterruptedException) {

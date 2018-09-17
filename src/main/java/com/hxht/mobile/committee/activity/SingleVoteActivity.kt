@@ -30,6 +30,7 @@ import okhttp3.FormBody
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.IOException
 
 
 class SingleVoteActivity : AppCompatActivity() {
@@ -112,7 +113,6 @@ class SingleVoteActivity : AppCompatActivity() {
         })
         selfDialog.setNoClickListener(getString(R.string.no), object : NormalDialog.NoClickListener {
             override fun onNoClick() {
-                Toast.makeText(this@SingleVoteActivity, "点击了--取消--按钮", Toast.LENGTH_LONG).show()
                 selfDialog.dismiss()
             }
         })
@@ -121,10 +121,11 @@ class SingleVoteActivity : AppCompatActivity() {
 
 
     inner class OkVoteTask internal constructor(val param: String?) : AsyncTask<Void, Void, Boolean>() {
-//        private val tipDialog = QMUITipDialog.Builder(this@SingleVoteActivity)
+        //        private val tipDialog = QMUITipDialog.Builder(this@SingleVoteActivity)
 //                .setIconType(QMUITipDialog.Builder.ICON_TYPE_LOADING)
 //                .create()
         var message = "感谢您的投票"
+
         override fun doInBackground(vararg params: Void): Boolean? {
             // TODO: attempt authentication against a network service.
             return try {
@@ -139,18 +140,23 @@ class SingleVoteActivity : AppCompatActivity() {
                         .post(formBody.build())
                         .build()
                 val call = OkHttpUtil.client.newCall(request)
-                val response = call.execute()
-                if (response.code() == 200) {
-                    val resultStr = response.body()?.string()
-                    val result = JSONObject(resultStr)
-                    if (result["code"] == 0) {
+                try {
+                    call.execute().use { response->
+                        if (response.code() == 200) {
+                            val resultStr = response.body()?.string()
+                            val result = JSONObject(resultStr)
+                            if (result["code"] == 0) {
 //                        tipDialog.dismiss()
-                        return true
+                                return true
+                            }
+                            if (result["code"] == 411) {
+                                message = "您已经投过票啦！"
+                                return true
+                            }
+                        }
                     }
-                    if (result["code"]==411) {
-                        message = "您已经投过票啦！"
-                        return true
-                    }
+                } catch (e: IOException) {
+                    return false
                 }
 //                tipDialog.dismiss()
                 false

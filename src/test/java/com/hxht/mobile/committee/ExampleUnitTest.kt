@@ -4,6 +4,7 @@ import org.json.JSONObject
 import org.junit.Test
 
 import org.junit.Assert.*
+import java.io.IOException
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -26,5 +27,13 @@ class ExampleUnitTest {
         val list = arrayListOf(s)
 
         print(list.size)
+
+//        try {
+//            call.execute().use { response->
+//
+//            }
+//        } catch (e: IOException) {
+//            return false
+//        }
     }
 }
