@@ -35,6 +35,7 @@ import com.hxht.mobile.committee.common.Constants.JCM_TOKEN
 import com.hxht.mobile.committee.common.Constants.JCM_URL
 import com.hxht.mobile.committee.entity.Meet
 import com.hxht.mobile.committee.utils.DialogUtil
+import com.hxht.mobile.committee.utils.MyApplication
 import com.hxht.mobile.committee.utils.OkHttpUtil
 import com.qmuiteam.qmui.widget.dialog.QMUITipDialog
 import com.yanzhenjie.kalle.Kalle
@@ -96,6 +97,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             attemptLogin()
         }
 //        sign_in_button.setOnClickListener { attemptLogin() }
+        MyApplication.getInstance().addActivity(this)
     }
 
     private fun populateAutoComplete() {

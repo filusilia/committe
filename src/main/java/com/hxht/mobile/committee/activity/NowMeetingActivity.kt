@@ -45,10 +45,7 @@ import com.hxht.mobile.committee.entity.Meet
 import com.hxht.mobile.committee.entity.Stuff
 import com.hxht.mobile.committee.entity.User
 import com.hxht.mobile.committee.entity.Vote
-import com.hxht.mobile.committee.utils.DialogUtil
-import com.hxht.mobile.committee.utils.MimeUtil
-import com.hxht.mobile.committee.utils.OkHttpUtil
-import com.hxht.mobile.committee.utils.StorageUtil
+import com.hxht.mobile.committee.utils.*
 import com.hxht.mobile.committee.websocket.MyStomp
 import com.qmuiteam.qmui.util.QMUIDisplayHelper
 import com.qmuiteam.qmui.widget.QMUIRadiusImageView
@@ -72,6 +69,7 @@ import ua.naiksoftware.stomp.LifecycleEvent
 import ua.naiksoftware.stomp.Stomp
 import ua.naiksoftware.stomp.client.StompClient
 import java.io.IOException
+import java.lang.System.exit
 import java.util.*
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -406,9 +404,10 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
     private fun handleTopicMessage(str: String?) {
         if (str == null) return
         val json = JSONObject(str)
-        LogUtils.i(json)
+//        LogUtils.i(json)
         when (json["code"]) {
             2001 -> {
+                LogUtils.i("投票参数:$str")
                 val data = json.getJSONObject("data")
                 if (deal(data)) {
                     val nowVote = data.getJSONObject("vote")
@@ -498,8 +497,9 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
                 Toast.makeText(this@NowMeetingActivity, "再按一次退出程序", Toast.LENGTH_SHORT).show()
                 firstTime = secondTime
             } else {
+                MyApplication.getInstance().exit()
                 finish()
-                System.exit(0)
+                exit(0)
             }
 //            super.onBackPressed()
         }
@@ -582,43 +582,41 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         override fun doInBackground(vararg params: Void): Boolean? {
             // TODO: attempt authentication against a network service.
             return try {
-                val request = Request.Builder().url("${Constants.JCM_URL}currentUser")
+                val request = Request.Builder().url("${Constants.JCM_URL}api/currentUser")
                         .addHeader(Constants.JCM_URL_HEADER, CacheDiskUtils.getInstance().getString(Constants.JCM_TOKEN))
                         .build()
                 val call = OkHttpUtil.client.newCall(request)
 //                val response = call.execute()
-                try {
-                    call.execute().use { response ->
-                        val resultStr = response.body()?.string()
-                        val result = JSONObject(resultStr)
-                        LogUtils.i("result:$result")
-                        if (result["code"] == 0) {
-                            user = User()
-                            val userJson = JSONObject(result["data"].toString())
-                            user?.id = userJson.getLong("id")
-                            user?.username = userJson["username"].toString()
-                            user?.realName = userJson["realName"].toString()
-                            user?.photo = userJson["photo"].toString()
-                            CacheDiskUtils.getInstance().put(Constants.CACHE_USERID, user?.id)
-                            MyStomp.connectStomp(meet?.id.toString())
-                            if (MyStomp.getStomp() != null) {
-                                MyStomp.getStomp()!!.topic("/topic/arthur/law/data")
-                                        .subscribeOn(Schedulers.io())
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe { topicMessage ->
-                                            LogUtils.i("object class receive:${topicMessage.payload}")
-                                            val receive = "{\"code\":2001,\"msg\":\"发起投票\",\"data\":{\"meeting\":{\"id\":5,\"name\":\"瓦窑堡会议\"},\"vote\":{\"name\":\"固态是否老电脑提升体验的关键\",\"summary\":\"如题\",\"creator\":{\"id\":1,\"realName\":\"super\"},\"multiple\":true,\"participants\":[1,2,3,4,5],\"dateCreated\":\"2018-09-11 15:59:23\",\"item\":[{\"id\":32,\"name\":\"是是是，赶紧买\"},{\"id\":33,\"name\":\"关我吊事\"}]}}}"
-                                            handleTopicMessage(receive)
-                                        }
-                            }
-                            return true
+                call.execute().use { response ->
+                    val resultStr = response.body()?.string()
+                    val result = JSONObject(resultStr)
+                    LogUtils.i("result:$result")
+                    if (result["code"] == 0) {
+                        user = User()
+                        val userJson = JSONObject(result["data"].toString())
+                        user?.id = userJson.getLong("id")
+                        user?.username = userJson["username"].toString()
+                        user?.realName = userJson["realName"].toString()
+                        user?.photo = userJson["photo"].toString()
+                        CacheDiskUtils.getInstance().put(Constants.CACHE_USERID, user?.id)
+                        MyStomp.connectStomp(meet?.id.toString())
+                        if (MyStomp.getStomp() != null) {
+                            MyStomp.getStomp()!!.topic("/topic/arthur/law/data")
+                                    .subscribeOn(Schedulers.io())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe { topicMessage ->
+                                        //                                        LogUtils.i("object class receive:${topicMessage.payload}")
+//                                        val receive = "{\"code\":2001,\"msg\":\"发起投票\",\"data\":{\"meeting\":{\"id\":5,\"name\":\"瓦窑堡会议\"},\"vote\":{\"name\":\"固态是否老电脑提升体验的关键\",\"summary\":\"如题\",\"creator\":{\"id\":1,\"realName\":\"super\"},\"multiple\":true,\"participants\":[1,2,3,4,5],\"dateCreated\":\"2018-09-11 15:59:23\",\"item\":[{\"id\":32,\"name\":\"是是是，赶紧买\"},{\"id\":33,\"name\":\"关我吊事\"}]}}}"
+                                        handleTopicMessage(topicMessage.payload)
+                                    }
                         }
+                        return true
                     }
-                } catch (e: IOException) {
-                    return false
                 }
                 false
-            } catch (e: InterruptedException) {
+            } catch (e: IOException) {
+                return false
+            } catch (e: Exception) {
                 false
             }
         }

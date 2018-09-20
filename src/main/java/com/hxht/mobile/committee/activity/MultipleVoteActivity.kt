@@ -163,6 +163,7 @@ class MultipleVoteActivity : AppCompatActivity() {
                             call.execute().use { response ->
                                 if (response.code() == 200) {
                                     val resultStr = response.body()?.string()
+                                    LogUtils.i("投票返回$resultStr")
                                     val result = JSONObject(resultStr)
                                     if (result["code"] == 0) {
 //                        tipDialog.dismiss()

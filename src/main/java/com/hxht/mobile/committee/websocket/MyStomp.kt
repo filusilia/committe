@@ -10,13 +10,17 @@ import com.blankj.utilcode.util.LogUtils
 import com.hxht.mobile.committee.activity.MultipleVoteActivity
 import com.hxht.mobile.committee.activity.SingleVoteActivity
 import com.hxht.mobile.committee.common.Constants
+import com.hxht.mobile.committee.entity.User
 import com.hxht.mobile.committee.entity.Vote
+import com.hxht.mobile.committee.utils.OkHttpUtil
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import okhttp3.Request
 import org.json.JSONObject
 import ua.naiksoftware.stomp.LifecycleEvent
 import ua.naiksoftware.stomp.Stomp
 import ua.naiksoftware.stomp.client.StompClient
+import java.io.IOException
 import java.util.*
 
 object MyStomp {
@@ -40,6 +44,7 @@ object MyStomp {
         val url = "ws://${Constants.JCM_IP}/stomp"
         when (reload) {
             true -> {
+                LogUtils.i("webSocket 强制连接就绪 $url")
                 try {
                     if (mStompClient != null)
                         mStompClient?.disconnect()
@@ -80,7 +85,7 @@ object MyStomp {
                                 override fun run() {
                                     sendEchoViaStomp()
                                 }
-                            }, 0, 15000)
+                            }, 0, 5000)
                         }
                         LifecycleEvent.Type.CLOSED -> {
                             LogUtils.i("CLOSED", lifecycleEvent.message)
@@ -106,9 +111,9 @@ object MyStomp {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe { topicMessage ->
-                    LogUtils.i("object class receive:${topicMessage.payload}")
-                    val receive = "{\"code\":2001,\"msg\":\"发起投票\",\"data\":{\"meeting\":{\"id\":6,\"name\":\"瓦窑堡会议\"},\"vote\":{\"name\":\"固态是否老电脑提升体验的关键\",\"summary\":\"如题\",\"creator\":{\"id\":1,\"realName\":\"super\"},\"multiple\":false,\"participants\":[1,2,3,4,5],\"dateCreated\":\"2018-09-11 15:59:23\",\"item\":[{\"id\":32,\"name\":\"是是是，赶紧买\"},{\"id\":33,\"name\":\"关我吊事\"}]}}}"
-//                    handleTopicMessage(receive)
+                    //                    LogUtils.i("object class receive:${topicMessage.payload}")
+//                    val receive = "{\"code\":2001,\"msg\":\"发起投票\",\"data\":{\"meeting\":{\"id\":6,\"name\":\"瓦窑堡会议\"},\"vote\":{\"name\":\"固态是否老电脑提升体验的关键\",\"summary\":\"如题\",\"creator\":{\"id\":1,\"realName\":\"super\"},\"multiple\":false,\"participants\":[1,2,3,4,5],\"dateCreated\":\"2018-09-11 15:59:23\",\"item\":[{\"id\":32,\"name\":\"是是是，赶紧买\"},{\"id\":33,\"name\":\"关我吊事\"}]}}}"
+                    handleTopicMessage(topicMessage.payload)
                 }
         mStompClient!!.connect()
     }
@@ -126,24 +131,31 @@ object MyStomp {
                 })
     }
 
-//    private fun handleTopicMessage(str: String?) {
-//        if (str == null) return
-//        val json = JSONObject(str)
-//        LogUtils.i(json)
-//        when (json["code"]) {
-//            2001 -> {
-//                val data = json.getJSONObject("data")
-//                if (deal(data)) {
-//                    val nowVote = data.getJSONObject("vote")
-//                    val entity = Vote(nowVote.getBoolean("multiple"))
-//                    entity.title = nowVote.getString("name")
-//                    entity.summary = nowVote.getString("summary")
-//                    entity.item = nowVote.getString("item")
-//                    startVote(entity)
-//                }
-//            }
-//        }
-//    }
+    private fun handleTopicMessage(str: String?) {
+        if (str == null) return
+        val json = JSONObject(str)
+        when (json["code"]) {
+            320 -> {
+                LogUtils.i("websocket token过期，现在重新获取。")
+                try {
+                    val request = Request.Builder().url("${Constants.JCM_URL}api/currentUser")
+                            .addHeader(Constants.JCM_URL_HEADER, CacheDiskUtils.getInstance().getString(Constants.JCM_TOKEN))
+                            .build()
+                    val call = OkHttpUtil.client.newCall(request)
+                    call.execute().use { response ->
+                        val resultStr = response.body()?.string()
+                        val result = JSONObject(resultStr)
+                        LogUtils.i("result:$result")
+                        if (result["code"] == 0) {
+                            LogUtils.i("success")
+                        }
+                    }
+                } catch (e: Exception) {
+                    false
+                }
+            }
+        }
+    }
 
 //    private fun startVote(vote: Vote) {
 ////        val vote = arrayListOf("还行，就判他五年 ","不行，这么认真的队伍要无罪释放 "," 爱咋咋地我弃权")

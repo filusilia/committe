@@ -20,6 +20,7 @@ import com.hxht.mobile.committee.adapter.MeetListAdapter
 import com.hxht.mobile.committee.common.Constants
 import com.hxht.mobile.committee.dialog.NormalDialog
 import com.hxht.mobile.committee.entity.Meet
+import com.hxht.mobile.committee.utils.MyApplication
 import com.hxht.mobile.committee.utils.OkHttpUtil
 import kotlinx.android.synthetic.main.activity_meet_list.*
 import okhttp3.Call
@@ -83,6 +84,7 @@ class MeetListActivity : AppCompatActivity() {
                 Toast.makeText(this@MeetListActivity, "再按一次返回到登录页面", Toast.LENGTH_SHORT).show()
                 firstTime = secondTime
             } else {
+                MyApplication.getInstance().exit()
                 finish()
                 System.exit(0)
             }
@@ -107,7 +109,7 @@ class MeetListActivity : AppCompatActivity() {
                         .build()
                 val call = OkHttpUtil.client.newCall(request)
                 try {
-                    call.execute().use { response->
+                    call.execute().use { response ->
                         if (response.code() == 200) {
                             val resultStr = response.body()?.string()
                             val result = JSONObject(resultStr)

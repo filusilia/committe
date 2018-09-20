@@ -17,20 +17,33 @@ class TokenInterceptor : Interceptor {
         val originResponse = chain.proceed(originalRequest)
         if (originResponse.code() == 401) { // 业务失败，因为登录失效。
             LogUtils.i("token过期，现在刷新token")
-            val content = JSONObject()
-            content.put("username", CacheDiskUtils.getInstance().getString(Constants.CACHE_USERNAME))
-            content.put("password", CacheDiskUtils.getInstance().getString(Constants.CACHE_PASSWORD))
-            val body = RequestBody.create(mediaType, content.toString())
-            val request = Request.Builder().url("$JCM_URL/api/token/").post(body)
-                    .build()
-            val loginResponse = client.newCall(request).execute()
-            if (loginResponse.code() == 200) {
-                //重新保存token
-                val resultStr = loginResponse.body()?.string()
-                val result = JSONObject(resultStr)
-                CacheDiskUtils.getInstance().put(Constants.JCM_TOKEN, result["data"].toString())
-                // 重新执行原始请求。
-                return chain.call().execute()
+            val formBody = FormBody.Builder()
+                    .add("username", CacheDiskUtils.getInstance().getString(Constants.CACHE_USERNAME))
+                    .add("password", CacheDiskUtils.getInstance().getString(Constants.CACHE_PASSWORD))
+
+            val request = Request.Builder().url("$JCM_URL/api/token/").post(formBody.build()).build()
+            try {
+                val loginResponse = client.newCall(request).execute()
+                if (loginResponse.code() == 200) {
+                    //重新保存token
+                    val resultStr = loginResponse.body()?.string()
+                    val result = JSONObject(resultStr)
+                    CacheDiskUtils.getInstance().put(Constants.JCM_TOKEN, result["data"].toString())
+                    // 重新执行原始请求。
+
+//                    val originalFormBody = originalRequest.body() as FormBody
+//                    val newBuilder = FormBody.Builder()
+//                    for (i in 0 until originalFormBody.size()) {
+//                        newBuilder.add(originalFormBody.name(i), originalFormBody.value(i))
+//                    }
+                    val request = originalRequest.newBuilder()
+                            .header(Constants.JCM_URL_HEADER, CacheDiskUtils.getInstance().getString(Constants.JCM_TOKEN))
+                            .build()
+                    return chain.proceed(request)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                LogUtils.e("重新获取token出错。${e.message}")
             }
         }
         return originResponse
