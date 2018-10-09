@@ -9,6 +9,7 @@ import android.content.Intent
 import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
+import android.os.Message
 import android.support.constraint.ConstraintLayout
 import android.support.design.widget.NavigationView
 import android.support.v4.content.ContextCompat
@@ -37,7 +38,6 @@ import com.hxht.mobile.committee.R
 import com.hxht.mobile.committee.R.id.number_progress_bar
 import com.hxht.mobile.committee.adapter.NowMeetingStuffAdapter
 import com.hxht.mobile.committee.common.Constants
-import com.hxht.mobile.committee.common.Constants.JCM_IP
 import com.hxht.mobile.committee.common.Constants.JCM_URL
 import com.hxht.mobile.committee.dialog.MyImageDialog
 import com.hxht.mobile.committee.dialog.NormalDialog
@@ -45,10 +45,13 @@ import com.hxht.mobile.committee.entity.Meet
 import com.hxht.mobile.committee.entity.Stuff
 import com.hxht.mobile.committee.entity.User
 import com.hxht.mobile.committee.entity.Vote
+import com.hxht.mobile.committee.handler.NowMeetingHandler
 import com.hxht.mobile.committee.utils.*
 import com.hxht.mobile.committee.websocket.MyStomp
+import com.qmuiteam.qmui.R.style.QMUI_Dialog
 import com.qmuiteam.qmui.util.QMUIDisplayHelper
 import com.qmuiteam.qmui.widget.QMUIRadiusImageView
+import com.qmuiteam.qmui.widget.dialog.QMUIDialog
 import com.qmuiteam.qmui.widget.dialog.QMUITipDialog
 import com.qmuiteam.qmui.widget.popup.QMUIPopup
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -62,15 +65,13 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_now_meeting.*
 import kotlinx.android.synthetic.main.content_now_meeting.*
 import kotlinx.android.synthetic.main.now_meeting_app_bar.*
+import okhttp3.Call
 import okhttp3.Request
+import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONObject
-import ua.naiksoftware.stomp.LifecycleEvent
-import ua.naiksoftware.stomp.Stomp
-import ua.naiksoftware.stomp.client.StompClient
 import java.io.IOException
 import java.lang.System.exit
-import java.util.*
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 /**
@@ -134,6 +135,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
 //            intent.putExtra("meet", meet)
 //            startActivityForResult(intent, 0)
 //        }
+        MyApplication.getInstance().addActivity(this)
     }
 
     private var mNormalPopup: QMUIPopup? = null
@@ -292,6 +294,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         recyclerView.adapter = sampleRecyclerAdapter
     }
 
+    @SuppressLint("CheckResult")
     private fun grantPermissions() {
         rxPermissions!!.requestEach(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE).subscribe { permission ->
             when {
@@ -322,7 +325,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         if (stuff == null)
             return
         val index = files.indexOf(stuff)
-        val card = recyclerView.layoutManager.findViewByPosition(index) as CardView
+        val card = recyclerView.layoutManager?.findViewByPosition(index) as CardView
 //        val waveProgressView = card.findViewById<WaveProgressView>(wave_progress) ?: return
         val numberProgressBar = card.findViewById<NumberProgressBar>(number_progress_bar) ?: return
 
@@ -412,6 +415,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
                 if (deal(data)) {
                     val nowVote = data.getJSONObject("vote")
                     val entity = Vote(nowVote.getBoolean("multiple"))
+                    entity.id = nowVote.getLong("id")
                     entity.title = nowVote.getString("name")
                     entity.summary = nowVote.getString("summary")
                     entity.item = nowVote.getString("item")
@@ -457,27 +461,105 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         return false
     }
 
+    var nowVoteId: Long = 0
+    val handler: NowMeetingHandler = NowMeetingHandler(this@NowMeetingActivity)
+    private fun selectVoteResult() {
+        if (nowVoteId == 0L) {
+            DialogUtil.show(this@NowMeetingActivity, "本次会议暂未投票！", QMUITipDialog.Builder.ICON_TYPE_INFO)
+            return
+        }
+        val request = Request.Builder().url("${Constants.JCM_URL}api/vote/$nowVoteId")
+                .addHeader(Constants.JCM_URL_HEADER, CacheDiskUtils.getInstance().getString(Constants.JCM_TOKEN))
+                .get()
+                .build()
+        val call = OkHttpUtil.client.newCall(request)
+        call.enqueue(object : okhttp3.Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                LogUtils.i("onFailure: ")
+                DialogUtil.show(this@NowMeetingActivity, "获取投票结果出错！", QMUITipDialog.Builder.ICON_TYPE_FAIL)
+            }
+
+            @Throws(IOException::class)
+            override fun onResponse(call: Call, response: Response) {
+//                        LogUtils.i("onResponse: " + response.body()?.string()+"${response.code()}")
+                if (response.code() == 200) {
+                    val dutyStr = response.body()?.string()
+                    val duty = JSONObject(dutyStr)
+                    if (duty["code"] == 0) {
+                        LogUtils.i(dutyStr)
+                        val voteJson = duty.getJSONObject("data")
+                        val vote = Vote()
+                        vote.id = voteJson.getLong("id")
+                        vote.title = voteJson.getString("name")
+                        vote.multiple = voteJson.getBoolean("multiple")
+                        vote.item = voteJson.getString("items")
+                        var mess = ""
+                        if (vote.item != null) {
+                            val item = voteJson.getJSONArray("items")
+                            for (i in 0..(item.length() - 1)) {
+                                val str = item.getJSONObject(i)
+                                val name = str.getString("name")
+                                val progress = str.getString("progress")
+                                mess += "【$name : $progress 】\n"
+                            }
+                        }
+
+                        handler.setVoteId(nowVoteId)
+                        val msg = Message.obtain()
+                        //从全局池中返回一个message实例，避免多次创建message（如new Message）
+                        msg.obj = "投票标题：${vote.title}\n" + mess
+                        msg.what = 1   //标志消息的标志
+                        handler.sendMessage(msg)
+
+                        QMUIDialog.MessageDialogBuilder(this@NowMeetingActivity)
+                                .setTitle("投票结果")
+                                .setMessage("${vote.title}\n" + mess)
+                                .addAction("确定") { dialog, index -> dialog.dismiss() }
+                                .create(QMUI_Dialog).show()
+                    } else {
+                    }
+                }
+            }
+        })
+    }
+
+    /**
+     * Instances of static inner classes do not hold an implicit
+     * reference to their outer class.
+     */
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         LogUtils.i("$requestCode,$resultCode,$data")
         if (null != data) {
-            when (requestCode) {
-                Constants.VOTE_CODE -> {
-                    val voteTitle = data.getStringExtra("voteTitle")
-                    val vote = data.getSerializableExtra("vote") as Vote
-                    if (null == voteTitle || null == vote) {
-                        LogUtils.i("投票信息不完整 跳过。")
+            try {
+                val vote = data.getSerializableExtra("vote") as Vote
+                when (resultCode) {
+                    Constants.VOTE_CODE -> {
+                        val voteTitle = data.getStringExtra("voteTitle")
+                        if (null == voteTitle || null == vote.multiple) {
+                            LogUtils.i("投票信息不完整 跳过。")
+                        }
+                        startVote(vote)
                     }
-                    startVote(vote)
-                }
-                else -> {
+                    Constants.MULTIPLE_VOTE_CODE -> {
+                        nowVoteId = vote.id
+                        selectVoteResult()
+                    }
+                    Constants.SINGLE_VOTE_CODE -> {
+                        nowVoteId = vote.id
+                        selectVoteResult()
+                    }
+                    else -> {
 
+                    }
                 }
+            } catch (e: Exception) {
+                LogUtils.i("返回activity出错，信息：${e.message}")
             }
         }
 
     }
-
 
     override fun onDestroy() {
         super.onDestroy()
@@ -527,10 +609,11 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
     }
 
     private fun menuCreateVote(): Boolean {
-        val intent = Intent(this@NowMeetingActivity, VoteActivity::class.java)
-        intent.putExtra("id", "336699999x")
-        intent.putExtra("meet", meet)
-        startActivityForResult(intent, Constants.VOTE_CODE)
+        DialogUtil.show(this@NowMeetingActivity, "功能暂未开放！", QMUITipDialog.Builder.ICON_TYPE_INFO)
+//        val intent = Intent(this@NowMeetingActivity, VoteActivity::class.java)
+//        intent.putExtra("id", "336699999x")
+//        intent.putExtra("meet", meet)
+//        startActivityForResult(intent, Constants.VOTE_CODE)
         return true
     }
 
@@ -565,6 +648,9 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
                 })
                 selfDialog.show()
 //                Toast.makeText(this@NowMeetingActivity, "按钮", Toast.LENGTH_SHORT).show()
+            }
+            R.id.vote_result -> {
+                selectVoteResult()
             }
         }
 
@@ -649,7 +735,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
             return
         }
         navUsername = findViewById(R.id.navUsername)
-        navUserHead = findViewById(R.id.navUserHead)
+        navUserHead = this.findViewById(R.id.navUserHead)
 
         if (navUsername != null) {
             navUsername?.text = user?.realName

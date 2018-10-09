@@ -11,7 +11,6 @@ import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.View
 import android.widget.TextView
-import android.widget.Toast
 import com.blankj.utilcode.util.BarUtils
 import com.blankj.utilcode.util.CacheDiskUtils
 import com.chad.library.adapter.base.BaseQuickAdapter
@@ -31,6 +30,7 @@ import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
+import java.util.*
 
 
 class SingleVoteActivity : AppCompatActivity() {
@@ -141,7 +141,7 @@ class SingleVoteActivity : AppCompatActivity() {
                         .build()
                 val call = OkHttpUtil.client.newCall(request)
                 try {
-                    call.execute().use { response->
+                    call.execute().use { response ->
                         if (response.code() == 200) {
                             val resultStr = response.body()?.string()
                             val result = JSONObject(resultStr)
@@ -168,15 +168,17 @@ class SingleVoteActivity : AppCompatActivity() {
         override fun onPostExecute(success: Boolean?) {
             Log.v("", "post execute")
             if (success == true) {
-                DialogUtil.show(this@SingleVoteActivity, message, QMUITipDialog.Builder.ICON_TYPE_SUCCESS)
                 val intent = Intent(this@SingleVoteActivity, NowMeetingActivity::class.java)
                 intent.putExtra("meet", meet)
-                startActivityForResult(intent, Constants.CHOOSE_VOTE_CODE)
+                intent.putExtra("vote", vote)
+                setResult(Constants.SINGLE_VOTE_CODE, intent)
+                finish()
             } else {
-                DialogUtil.show(this@SingleVoteActivity, "投票失败！", QMUITipDialog.Builder.ICON_TYPE_FAIL)
                 val intent = Intent(this@SingleVoteActivity, NowMeetingActivity::class.java)
                 intent.putExtra("meet", meet)
-                startActivityForResult(intent, Constants.CHOOSE_VOTE_CODE)
+                intent.putExtra("vote", vote)
+                setResult(Constants.SINGLE_VOTE_CODE, intent)
+                finish()
             }
         }
 

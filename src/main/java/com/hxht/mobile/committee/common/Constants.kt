@@ -25,7 +25,8 @@ object Constants {
     const val NOW_MEETING_CODE:Int = 1001
     const val MEETING_LIST_CODE:Int = 1002
     const val VOTE_CODE:Int = 1003
-    const val CHOOSE_VOTE_CODE:Int = 1004
-    const val EXP_PLAYER_CODE:Int = 1005
-    const val USER_INFO_CODE:Int = 1005
+    const val SINGLE_VOTE_CODE:Int = 1004
+    const val MULTIPLE_VOTE_CODE:Int = 1005
+    const val EXP_PLAYER_CODE:Int = 1006
+    const val USER_INFO_CODE:Int = 1007
 }

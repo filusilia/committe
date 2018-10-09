@@ -16,6 +16,11 @@
                 android:id="@+id/nav_change_meet"
                 android:icon="@drawable/ic_menu_change"
                 android:title="@string/change_meet" />
+
+            <item
+                android:id="@+id/vote_result"
+                android:icon="@drawable/ic_menu_vote_result"
+                android:title="@string/vote_result" />
         </menu>
     </item>
 

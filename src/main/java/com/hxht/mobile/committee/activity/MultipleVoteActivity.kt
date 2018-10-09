@@ -190,15 +190,17 @@ class MultipleVoteActivity : AppCompatActivity() {
         override fun onPostExecute(success: Boolean?) {
             Log.v("", "post execute")
             if (success == true) {
-                DialogUtil.show(this@MultipleVoteActivity, message, QMUITipDialog.Builder.ICON_TYPE_SUCCESS)
                 val intent = Intent(this@MultipleVoteActivity, NowMeetingActivity::class.java)
                 intent.putExtra("meet", meet)
-                startActivityForResult(intent, Constants.CHOOSE_VOTE_CODE)
+                intent.putExtra("vote", vote)
+                setResult(Constants.MULTIPLE_VOTE_CODE, intent)
+                finish()
             } else {
-                DialogUtil.show(this@MultipleVoteActivity, "投票失败！", QMUITipDialog.Builder.ICON_TYPE_FAIL)
                 val intent = Intent(this@MultipleVoteActivity, NowMeetingActivity::class.java)
                 intent.putExtra("meet", meet)
-                startActivityForResult(intent, Constants.CHOOSE_VOTE_CODE)
+                intent.putExtra("vote", vote)
+                setResult(Constants.MULTIPLE_VOTE_CODE, intent)
+                finish()
             }
         }
 

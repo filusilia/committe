@@ -34,4 +34,5 @@
     <string name="loginHint">Login</string>
     <string name="user_info">个人信息</string>
     <string name="change_meet">change meet</string>
+    <string name="vote_result">vote result</string>
 </resources>

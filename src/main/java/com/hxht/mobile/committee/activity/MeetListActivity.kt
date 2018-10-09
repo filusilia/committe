@@ -56,6 +56,7 @@ class MeetListActivity : AppCompatActivity() {
 //        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
         adapterTask = MeetListTask()
         adapterTask?.execute()
+        MyApplication.getInstance().addActivity(this)
     }
 
     private var firstTime = 0L
@@ -240,7 +241,7 @@ class MeetListActivity : AppCompatActivity() {
 
         selfDialog.setTitle("选择会议")
         selfDialog.setMessage("将会开启会议：\n${meet.meetName}")
-        selfDialog.setYesClickListener("没错", object : NormalDialog.YesClickListener {
+        selfDialog.setYesClickListener(getString(R.string.yes), object : NormalDialog.YesClickListener {
             override fun onYesClick() {
                 selfDialog.dismiss()
                 val intent = Intent(this@MeetListActivity, NowMeetingActivity::class.java)
@@ -248,7 +249,7 @@ class MeetListActivity : AppCompatActivity() {
                 startActivityForResult(intent, Constants.MEETING_LIST_CODE)
             }
         })
-        selfDialog.setNoClickListener("好像不对", object : NormalDialog.NoClickListener {
+        selfDialog.setNoClickListener(getString(R.string.no), object : NormalDialog.NoClickListener {
             override fun onNoClick() {
                 Toast.makeText(this@MeetListActivity, "点击了--取消--按钮", Toast.LENGTH_LONG).show()
                 selfDialog.dismiss()
