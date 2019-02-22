@@ -3,10 +3,10 @@ package com.hxht.mobile.committee.activity
 import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
-import android.support.v4.content.ContextCompat
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
@@ -35,7 +35,7 @@ import java.util.*
 
 class MeetListActivity : AppCompatActivity() {
 
-    private lateinit var recyclerView: RecyclerView
+    private lateinit var recyclerView: androidx.recyclerview.widget.RecyclerView
 
     private val meets = ArrayList<Meet>()
     private var nowMeeting: Boolean? = null
@@ -153,10 +153,10 @@ class MeetListActivity : AppCompatActivity() {
     private fun initAdapter() {
 
         // 获取RecyclerView对象
-        recyclerView = findViewById<View>(R.id.my_recycler_view) as RecyclerView
+        recyclerView = findViewById<View>(R.id.my_recycler_view) as androidx.recyclerview.widget.RecyclerView
 
         // 创建线性布局管理器（默认是垂直方向）
-        val layoutManager = GridLayoutManager(this, 2)
+        val layoutManager = androidx.recyclerview.widget.GridLayoutManager(this, 2)
         // 为RecyclerView指定布局管理对象
         recyclerView.layoutManager = layoutManager
         // 创建Adapter

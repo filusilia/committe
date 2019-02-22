@@ -20,7 +20,7 @@
 
         <!-- 版本更新所要用到的 fileProvider 用于兼容7.0通知栏的安装 -->
         <provider
-            android:name="android.support.v4.content.FileProvider"
+            android:name="androidx.core.content.FileProvider"
             android:authorities="committee.fileProvider"
             android:exported="false"
             android:grantUriPermissions="true"

@@ -10,15 +10,15 @@ import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
 import android.os.Message
-import android.support.constraint.ConstraintLayout
-import android.support.design.widget.NavigationView
-import android.support.v4.content.ContextCompat
-import android.support.v4.view.GravityCompat
-import android.support.v7.app.ActionBarDrawerToggle
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.CardView
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.constraintlayout.widget.ConstraintLayout
+import com.google.android.material.navigation.NavigationView
+import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.util.Log
 import android.view.Gravity
 import android.view.Menu
@@ -79,7 +79,7 @@ import java.lang.System.exit
  */
 class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
-    private lateinit var recyclerView: RecyclerView
+    private lateinit var recyclerView: androidx.recyclerview.widget.RecyclerView
     private val files = arrayListOf<Stuff>()
     private var meet: Meet? = null
     private val PERMISSIONS_STORAGE = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -217,10 +217,10 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
 
     private fun initAdapter() {
         // 获取RecyclerView对象
-        recyclerView = findViewById<View>(R.id.meetStuffRecycler) as RecyclerView
+        recyclerView = findViewById<View>(R.id.meetStuffRecycler) as androidx.recyclerview.widget.RecyclerView
 
         // 创建线性布局管理器（默认是垂直方向）
-        val layoutManager = GridLayoutManager(this, 4)
+        val layoutManager = androidx.recyclerview.widget.GridLayoutManager(this, 4)
 //        layoutManager.spanSizeLookup =GridLayoutManager.SpanSizeLookup(){
 //
 //        }
@@ -325,7 +325,7 @@ class NowMeetingActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         if (stuff == null)
             return
         val index = files.indexOf(stuff)
-        val card = recyclerView.layoutManager?.findViewByPosition(index) as CardView
+        val card = recyclerView.layoutManager?.findViewByPosition(index) as androidx.cardview.widget.CardView
 //        val waveProgressView = card.findViewById<WaveProgressView>(wave_progress) ?: return
         val numberProgressBar = card.findViewById<NumberProgressBar>(number_progress_bar) ?: return
 

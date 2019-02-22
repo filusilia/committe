@@ -2,8 +2,8 @@ package com.hxht.mobile.committee.activity
 
 import android.os.AsyncTask
 import android.os.Bundle
-import android.support.design.widget.NavigationView
-import android.support.v7.app.AppCompatActivity
+import com.google.android.material.navigation.NavigationView
+import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 import android.view.MenuItem
 import com.blankj.utilcode.util.BarUtils

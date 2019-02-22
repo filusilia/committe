@@ -5,9 +5,9 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.util.Log
 import android.view.View
 import android.widget.TextView
@@ -74,10 +74,10 @@ class SingleVoteActivity : AppCompatActivity() {
             list.add(arr.getString(i))
         }
         // 获取RecyclerView对象
-        val chooseVoteChild = findViewById<View>(R.id.chooseVoteChild) as RecyclerView
+        val chooseVoteChild = findViewById<View>(R.id.chooseVoteChild) as androidx.recyclerview.widget.RecyclerView
 
         // 创建线性布局管理器（默认是垂直方向）
-        val layoutManager = GridLayoutManager(this, 1)
+        val layoutManager = androidx.recyclerview.widget.GridLayoutManager(this, 1)
         // 为RecyclerView指定布局管理对象
         chooseVoteChild.layoutManager = layoutManager
         val sampleRecyclerAdapter = SingleVoteAdapter(list)

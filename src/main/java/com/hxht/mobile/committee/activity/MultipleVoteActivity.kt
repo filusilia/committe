@@ -5,9 +5,9 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.util.Log
 import android.view.View
 import android.widget.CheckBox
@@ -79,10 +79,10 @@ class MultipleVoteActivity : AppCompatActivity() {
             list.add(arr.getString(i))
         }
         // 获取RecyclerView对象
-        val multipleVoteChild = findViewById<View>(R.id.multipleVoteChild) as RecyclerView
+        val multipleVoteChild = findViewById<View>(R.id.multipleVoteChild) as androidx.recyclerview.widget.RecyclerView
 
         // 创建线性布局管理器（默认是垂直方向）
-        val layoutManager = GridLayoutManager(this, 1)
+        val layoutManager = androidx.recyclerview.widget.GridLayoutManager(this, 1)
         // 为RecyclerView指定布局管理对象
         multipleVoteChild.layoutManager = layoutManager
         sampleRecyclerAdapter = MultipleVoteAdapter(list)
